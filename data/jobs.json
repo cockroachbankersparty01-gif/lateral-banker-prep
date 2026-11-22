@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-22T17:00:00Z",
+ "updated": "2026-11-22T18:00:00Z",
  "jobs": [
   {
    "id": "bob-so-2026-11",
@@ -24,6 +24,34 @@
    "stage": "Admit card out (18.11.2026) – online exam on 27.11.2026",
    "stageType": "in-process",
    "vacancies": "205"
+  },
+  {
+   "id": "ibps-crp-rrbs-xiv-scale-1-2-3",
+   "bank": "IBPS (Regional Rural Banks)",
+   "post": "CRP RRBs-XIV – Officer Scale I, II and III (previous cycle)",
+   "scale": "Scale I–III (RRB)",
+   "stage": "Final result and provisional allotment 23.02.2026; first reserve list released 01.06.2026",
+   "stageType": "final",
+   "resultDate": "2026-06-01",
+   "link": "https://www.ibps.in",
+   "resultLink": "https://www.ibps.in",
+   "addedAt": "2026-11-22T18:00:00Z"
+  },
+  {
+   "id": "ibps-crp-rrbs-xv-scale-2-3",
+   "bank": "IBPS (Regional Rural Banks)",
+   "post": "CRP RRBs-XV – Officer Scale II (General Banking & Specialist) and Officer Scale III",
+   "scale": "MMGS-II and MMGS-III (RRB)",
+   "vacancies": "about 1,047 Scale II + 220 Scale III (as reported)",
+   "experience": "Prior banking / financial-sector officer experience required",
+   "notified": "2026-08-31",
+   "lastDate": "2026-09-27",
+   "examDate": "2026-12-20",
+   "link": "https://www.ibps.in",
+   "stage": "Applications closed – single online exam on 20.12.2026, then common interview",
+   "stageType": "in-process",
+   "note": "Applications 1–21 Sep 2026, extended to 27 Sep (as reported). Pattern: 200 Qs / 200 marks / 2 hrs.",
+   "addedAt": "2026-11-22T18:00:00Z"
   },
   {
    "id": "ibps-crp-spl-xvi",
