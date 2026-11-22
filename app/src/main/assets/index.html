@@ -98,7 +98,6 @@ main{padding-bottom:84px}
 .aib i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;color:#fff;font-size:11px;font-weight:800;flex:none}
 .aib.fav{border-color:var(--acc);background:#fff8f1}
 .toast{z-index:60}
-#chatsend{display:none}
 .pt{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0}
 .pt th,.pt td{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left}.pt th{color:var(--mut);font-size:12px;font-weight:600}
 .pt td:not(:first-child),.pt th:not(:first-child){text-align:right;white-space:nowrap}
@@ -512,7 +511,8 @@ const TOOLS=[
 ];
 async function sendChat(){
   const text=$("chatin").value.trim();if(!text||chatBusy)return;
-  let sample=null;try{sample=await claude.use("sample");}catch(e){}
+  let sample=null;try{if(typeof claude!=="undefined"&&claude.use)sample=await claude.use("sample");}catch(e){}
+  if(!sample&&MENTOR_URL)sample=workerSample;
   if(!sample){$("chatnote").textContent="The chatbot isn't available in this view. Open the app in Claude while signed in.";return;}
   $("chatin").value="";CHAT.push({role:"user",content:text});const bot={role:"assistant",content:""};CHAT.push(bot);drawChat();
   chatBusy=true;$("chatsend").disabled=true;chatCtl=new AbortController();
@@ -523,7 +523,7 @@ async function sendChat(){
     bot.content=r.text||bot.content||"Sorry, I couldn't answer that.";
   }catch(e){
     bot.err=true;
-    bot.content=e&&e.code==="rate_limited"?"Too many questions at once. Please wait a minute and try again.":e&&e.code==="not_granted"?"The chatbot isn't enabled for this view.":(e&&e.text)||"Something went wrong. Please try again.";
+    bot.content=e&&e.code==="rate_limited"?"The free AI limit is busy right now. Please wait a minute or use Ask ChatGPT.":e&&e.code==="not_granted"?"The chatbot isn't enabled for this view.":(e&&e.text)||"Something went wrong. Please try again.";
   }
   chatBusy=false;$("chatsend").disabled=false;drawChat();
 }
@@ -843,6 +843,31 @@ function askedTag(q){
   return {kind:topic?"topic":"type",label:hits.join(", ")};
 }
 function askedHtml(q){const a=askedTag(q);if(!a)return "";return `<span class="tag yr" title="${a.kind==="topic"?"This topic was reported as asked in":"This question type appeared in"} ${a.label}">${a.kind==="topic"?"Asked":"Type seen"}: ${a.label}</span>`;}
+
+// ---- In-app mentor via free Gemini (Cloudflare Worker), switched on from data/config.json ----
+const CONFIG_URL="https://raw.githubusercontent.com/cockroachbankersparty01-gif/lateral-banker-prep/main/data/config.json";
+let MENTOR_URL="";
+try{MENTOR_URL=localStorage.getItem("lbp_mentor")||"";}catch(e){}
+function mentorUi(){const on=!!MENTOR_URL;$("chatsend").style.display=on?"":"none";
+  $("chatsend").textContent="Ask";
+  $("chatnote").textContent=on?"Answers come from Google Gemini (free tier) inside the app; busy times may hit daily limits – then use Ask ChatGPT. Don't share personal or account details. AI answers may contain errors – check official sources.":"Opens ChatGPT with your question and exam context already typed – free with your own ChatGPT account (free-plan usage limits apply). AI answers may contain errors – check official sources.";
+  $("chatintro").textContent=on?"Ask anything about banking awareness, RBI policy, JAIIB/CAIIB, promotions, exam pattern or interviews – answers appear right here.":"Type your question or tap a suggestion, then tap Ask ChatGPT. Your question goes with exam-mentor instructions.";}
+(async()=>{mentorUi();try{const r=await fetch(CONFIG_URL+"?t="+Date.now(),{cache:"no-store"});if(r.ok){const c=await r.json();const u=/^https:\/\//.test(c.mentorUrl||"")?c.mentorUrl:"";MENTOR_URL=u;try{localStorage.setItem("lbp_mentor",u);}catch(e){}mentorUi();}}catch(e){}})();
+function mentorCtx(){
+  const g=GIST[0]?GIST[0].title+": "+GIST[0].rows.map(r=>r[0]+" "+r[1]).join("; "):"";
+  const t=today();
+  const jobs=(JOBS||[]).filter(j=>j.stageType!=="final"||(j.resultDate||"")>=new Date(Date.now()-90*864e5).toISOString().slice(0,10)).slice(0,30)
+    .map(j=>`${j.bank} – ${j.post}${j.lastDate?` | last date ${j.lastDate}`:""}${j.examDate?` | exam ${j.examDate}`:""}${j.stage?` | ${j.stage}`:""}`).join("\n");
+  return `Today: ${t}\nPolicy: ${g}\nOpenings and results in the app:\n${jobs}`;
+}
+async function workerSample(hist,opts){
+  const r=await fetch(MENTOR_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:hist,context:mentorCtx()}),signal:opts&&opts.signal});
+  if(r.status===429)throw{code:"rate_limited"};
+  let d={};try{d=await r.json();}catch(e){}
+  if(!r.ok)throw{code:"error",text:"The in-app mentor is unavailable right now. Please use Ask ChatGPT."};
+  if(opts&&opts.onText)opts.onText({text:d.text||""});
+  return {text:d.text||""};
+}
 
 function renderCal(){
   const box=$("v-cal");const tdy=today();const ev=calEvents();
