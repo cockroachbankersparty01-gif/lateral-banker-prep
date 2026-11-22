@@ -39,3 +39,13 @@ jobs:
             Download **LateralBankerPrep.apk** below and open it on your Android phone (Android 7.0+).
             Allow "Install unknown apps" when asked. Jobs and results update inside the app automatically.
           files: LateralBankerPrep.apk
+      - name: Save the APK to the "apk" branch (direct copy for sharing)
+        run: |
+          mkdir /tmp/apkbranch && cp LateralBankerPrep.apk /tmp/apkbranch/
+          cd /tmp/apkbranch
+          git init -q -b apk
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add LateralBankerPrep.apk
+          git commit -q -m "APK build ${{ github.run_number }}"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" apk
