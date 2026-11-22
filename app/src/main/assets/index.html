@@ -103,6 +103,16 @@ main{padding-bottom:84px}
 .pt th,.pt td{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left}.pt th{color:var(--mut);font-size:12px;font-weight:600}
 .pt td:not(:first-child),.pt th:not(:first-child){text-align:right;white-space:nowrap}
 .pt tr.tot td{font-weight:700;border-bottom:0}
+details.sd{padding:0}
+details.sd summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;font-weight:700;font-size:15px;min-height:44px}
+details.sd summary::-webkit-details-marker{display:none}
+details.sd summary::after{content:"+";font-size:20px;color:var(--acc);flex:none}
+details.sd[open] summary::after{content:"–"}
+details.sd summary .tag{margin-left:auto;font-weight:600}
+.sb{padding:0 16px 16px;font-size:14px;line-height:1.55}
+.sb h4,.sh{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--navy2);margin:12px 0 4px}
+.sb ul,.sl{padding-left:18px;font-size:14px;line-height:1.55}.sb li,.sl li{margin-bottom:4px}
+.sb .pt td{text-align:left!important;white-space:normal!important}
 </style>
 </head>
 <body>
@@ -112,6 +122,7 @@ main{padding-bottom:84px}
   <nav id="nav">
     <button data-v="jobs" class="on">Latest Jobs</button>
     <button data-v="home">Practice</button>
+    <button data-v="study">Study</button>
     <button data-v="cal">Exam Calendar</button>
     <button data-v="pat">Exam Pattern</button>
     <button data-v="gist">Policy Gist</button>
@@ -186,6 +197,9 @@ main{padding-bottom:84px}
     </div>
     <div id="jobs"><div class="card stat">Loading…</div></div>
   </section>
+
+  <!-- STUDY -->
+  <section id="v-study" class="hide"></section>
 
   <!-- PATTERN -->
   <section id="v-pat" class="hide"></section>
@@ -336,10 +350,10 @@ $("f-exam").innerHTML=["All",...ALL_EX].map(v=>`<option>${v}</option>`).join("")
 $("f-mode").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;st.mode=b.dataset.m;[...$("f-mode").children].forEach(c=>c.classList.toggle("on",c===b));upd();};
 upd();
 
-function show(v){["home","quiz","result","jobs","pat","cal","gist","mistakes","add"].forEach(x=>$("v-"+x).classList.toggle("hide",x!==v));
+function show(v){["home","quiz","result","jobs","study","pat","cal","gist","mistakes","add"].forEach(x=>$("v-"+x).classList.toggle("hide",x!==v));
   [...$("nav").children].forEach(b=>b.classList.toggle("on",b.dataset.v===v||(v==="quiz"||v==="result")&&b.dataset.v==="home"));window.scrollTo(0,0);}
 $("nav").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(quiz&&!quiz.done&&!confirmLeave())return;stop();
-  const v=b.dataset.v;if(v==="gist")renderGist();if(v==="cal")renderCal();if(v==="pat")renderPat();if(v==="jobs")renderJobs();if(v==="mistakes")renderMist();show(v);};
+  const v=b.dataset.v;if(v==="gist")renderGist();if(v==="cal")renderCal();if(v==="pat")renderPat();if(v==="study")renderStudy();if(v==="jobs")renderJobs();if(v==="mistakes")renderMist();show(v);};
 function confirmLeave(){quiz=null;return true}
 
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -580,6 +594,167 @@ function renderPat(){
   <ul style="padding-left:18px;font-size:13.5px;line-height:1.55">${p.notes.map(n=>`<li>${n}</li>`).join("")}</ul>
   <div class="src">Sources: ${p.src.map(x=>`<a href="${x[1]}" target="_blank" rel="noopener">${x[0]}</a>`).join(" · ")}</div></div>`).join("");
 }
+// ---- Study material (scale-wise) ----
+const ROADMAP={
+I:{t:"Scale I – JMGS-I",ex:"SBI CBO, PNB LBO, IBPS SO, IBPS RRB (Scale I only for reference), Union/other PSB Assistant Manager",
+ focus:["SBI CBO has no Reasoning/Quant: Banking Knowledge (40), English (30), GA/Economy (30), Computer (20) + letter & essay.","PNB LBO-type papers: Reasoning, DI, Quant, English (25 each) + Banking/Economy Awareness (50).","Banking basics, RBI policy, KYC, payments, schemes and 6 months of current affairs carry the most marks."],
+ plan:["Weeks 1–2: Banking basics, RBI & monetary policy, KYC/AML, payment systems (modules below).","Weeks 3–4: Credit & NPA basics, financial inclusion schemes, Budget 2026-27.","Weeks 5–6: Aptitude formula sheet + 20 timed questions a day per section.","Weeks 7–8: Full mocks, current affairs revision, letter/essay practice (CBO)."]},
+II:{t:"Scale II – MMGS-II (Manager)",ex:"BOM Generalist Officer, Union Bank GBO (Manager), IBPS RRB Officer Scale II, BoB/Canara/BOI lateral Manager",
+ focus:["Aptitude sections are short (20–40 Qs) – often qualifying (Union) or equal weight (RRB: 40 Qs each).","Professional Knowledge decides merit: credit appraisal, working capital, NPA/IRACP, SARFAESI/IBC, KYC, branch operations.","Expect applied questions: compute a ratio, classify an account, choose the right recovery route."],
+ plan:["Weeks 1–2: Credit appraisal & working capital, MSME lending, priority sector.","Weeks 3–4: NPA, provisioning, Prudential Framework, SARFAESI/IBC/DRT, wilful defaulters.","Week 5: Basel III basics, payments, KYC/AML, customer service rules.","Week 6: Aptitude (DI, puzzles, RC) + PK mocks; interview stories from your own branch work."]},
+III:{t:"Scale III – MMGS-III (Senior Manager)",ex:"IBPS RRB Officer Scale III, Union Bank up to Scale III, BoB/Canara/Indian Bank lateral Senior Manager",
+ focus:["PK is deeper: risk management, credit monitoring, early warning signals, fraud framework, Basel III & PCA, ALM.","Case-based questions from a branch-head view: stressed MSME account, fraud suspicion, compliance lapse, staff issue.","Interview tests judgement and leadership as much as rules."],
+ plan:["Weeks 1–2: Risk management (credit, market, operational, liquidity), ALM, large exposures.","Weeks 3–4: Stressed assets end-to-end: SMA → restructuring → SARFAESI/IBC/compromise; ECL from April 2027.","Week 5: Governance, fraud master directions, wilful defaulter process, audit & compliance.","Week 6: Case studies (STAR answers), mocks, current regulatory changes."]},
+IV:{t:"Scale IV – SMGS-IV (Chief Manager)",ex:"SBI SCO (Chief Manager posts), BoB/Union/BOM Scale IV, RBI lateral experts",
+ focus:["Often Professional Knowledge only (e.g., BOM Scale IV: 50 Qs/100 marks) or shortlisting + interview.","Strategic topics: balance-sheet and NIM management, capital planning, RAROC, ECL impact, digital transformation, regulation trends.","Interview: leadership, business growth plans, handling regulators/audit, current policy (Budget 2026-27, HLC on Banking)."],
+ plan:["Weeks 1–2: Bank financial management – capital (Basel III, ICAAP), liquidity (LCR/NSFR), ALM, profitability levers.","Week 3: Risk & governance – PCA, large exposures, ECL, model risk, fraud & cyber risk.","Week 4: Policy & strategy – Budget 2026-27, MPC trend, HLC on Banking for Viksit Bharat, PSB reforms, digital lending rules.","Week 5: Interview prep – 10 prepared stories, a 90-day plan for the role, one-page view on your domain."]}
+};
+const STUDY=[
+{id:"rbi",t:"RBI & monetary policy",sc:["I","II","III","IV"],topic:"Monetary Policy",h:`
+<h4>Policy rates (after the 7 Oct 2026 MPC)</h4>
+<table class="pt"><tr><th>Rate</th><th>Level</th></tr><tr><td>Repo rate</td><td>5.50%</td></tr><tr><td>Standing Deposit Facility (SDF)</td><td>5.25%</td></tr><tr><td>Marginal Standing Facility (MSF) = Bank Rate</td><td>5.75%</td></tr><tr><td>CRR</td><td>3% of NDTL (since Nov 2025)</td></tr><tr><td>SLR</td><td>18% of NDTL</td></tr></table>
+<p class="note">Stance: calibrated tightening. Check the latest MPC statement before the exam – rates change every two months.</p>
+<h4>Framework</h4><ul>
+<li><b>Inflation target:</b> 4% CPI with a 2%–6% band, notified under Sec 45ZA for 1 Apr 2026 – 31 Mar 2031 (retained for the second time).</li>
+<li><b>MPC (Sec 45ZB):</b> 6 members – Governor (chair, casting vote), Deputy Governor (monetary policy), one RBI nominee, three external members. Quorum 4. Minutes published on the 14th day (Sec 45ZL). Meets at least 4 times a year (usually 6).</li>
+<li><b>If inflation stays outside the band for 3 consecutive quarters</b>, RBI must report reasons and remedial action to the government.</li>
+<li><b>Liquidity tools:</b> LAF (repo/reverse repo via VRR/VRRR auctions), SDF floor, MSF ceiling, OMOs, forex swaps, CRR changes.</li>
+<li><b>Transmission:</b> retail and MSME floating loans are linked to an External Benchmark (EBLR, mostly repo) – reset at least once in 3 months.</li></ul>`},
+{id:"laws",t:"Banking laws & recovery",sc:["I","II","III","IV"],topic:"Credit & NPA",h:`
+<h4>Key sections</h4><ul>
+<li><b>RBI Act 1934:</b> Sec 17 (business of RBI), 22 (sole right to issue notes), 24 (denominations), 42 (CRR), 45ZA (inflation target), 45ZB (MPC).</li>
+<li><b>BR Act 1949:</b> Sec 5(b) definition of banking, 6 (permitted business), 22 (licensing), 24 (SLR), 35A (RBI's power to give directions), 49A (only banks can take deposits payable on demand by cheque).</li>
+<li><b>NI Act Sec 138 (cheque bounce):</b> notice within 30 days of dishonour intimation → drawer gets 15 days to pay → complaint within 1 month after that.</li></ul>
+<h4>Recovery routes</h4>
+<table class="pt"><tr><th>Route</th><th>Key rules</th></tr>
+<tr><td>SARFAESI 2002</td><td>Secured NPA; not for loans &lt; ₹1 lakh or dues &lt; 20% of principal+interest, or agricultural land. 13(2) notice – 60 days; reply to objections in 15 days (13(3A)); then 13(4) possession.</td></tr>
+<tr><td>DRT</td><td>Dues of ₹20 lakh and above.</td></tr>
+<tr><td>IBC 2016</td><td>Minimum default ₹1 crore. Sec 7 (financial creditor), 9 (operational), 10 (corporate debtor). CIRP 180 + 90 days, outer limit 330 days incl. litigation.</td></tr>
+<tr><td>Lok Adalat</td><td>Settlement of smaller dues (up to ₹20 lakh) – no court fee.</td></tr>
+<tr><td>Compromise settlement</td><td>Board-approved policy; 12-month minimum cooling period before fresh credit (non-farm) – RBI framework, June 2023.</td></tr></table>`},
+{id:"kyc",t:"KYC, AML & customer service",sc:["I","II"],topic:"Customer Service",h:`<ul>
+<li><b>Periodic KYC updation:</b> high risk every 2 years, medium 8 years, low 10 years.</li>
+<li><b>OVDs:</b> passport, driving licence, proof of Aadhaar possession, voter ID, NREGA job card, NPR letter. CKYCR holds a central KYC record (KIN). Video-based KYC (V-CIP) allowed.</li>
+<li><b>PMLA 2002 reporting to FIU-IND:</b> Cash Transaction Report for cash above ₹10 lakh (single or connected, in a month); Suspicious Transaction Report within 7 working days of concluding suspicion.</li>
+<li><b>Customer liability for unauthorised e-transactions:</b> zero if reported within 3 working days; limited liability if reported in 4–7 working days; beyond that as per board policy.</li>
+<li><b>RB-IOS 2021:</b> one integrated ombudsman ("One Nation One Ombudsman"); complain to the bank first, approach the ombudsman if no reply in 30 days or reply is unsatisfactory.</li>
+<li><b>Cheques:</b> valid 3 months; Positive Pay enabled for ₹50,000+, may be mandatory for ₹5 lakh+.</li>
+<li><b>DICGC:</b> deposits insured up to ₹5 lakh per depositor per bank (principal + interest), unchanged since Feb 2020; a raise to ₹7.5 lakh has been proposed – check status.</li></ul>`},
+{id:"credit",t:"Credit appraisal & working capital",sc:["II","III","IV"],topic:"Credit & NPA",h:`
+<h4>Ratios to know cold</h4>
+<table class="pt"><tr><th>Ratio</th><th>Formula / benchmark</th></tr>
+<tr><td>Current ratio</td><td>CA ÷ CL; banks usually look for 1.33 (Tandon II)</td></tr>
+<tr><td>Quick ratio</td><td>(CA − inventory) ÷ CL; about 1</td></tr>
+<tr><td>TOL/TNW</td><td>Total outside liabilities ÷ tangible net worth; lower is safer (often ≤ 3)</td></tr>
+<tr><td>DSCR</td><td>(PAT + depreciation + interest on TL) ÷ (instalment + interest on TL); ≥ 1.25 usually required, 1.5–2 comfortable</td></tr>
+<tr><td>Interest coverage</td><td>EBIT ÷ interest</td></tr>
+<tr><td>FACR</td><td>Net fixed assets ÷ term loans; &gt; 1</td></tr></table>
+<h4>Working capital methods</h4><ul>
+<li><b>Tandon Method II:</b> MPBF = 75% of current assets − current liabilities (other than bank borrowing). Borrower brings 25% of CA as margin → current ratio 1.33.</li>
+<li><b>Turnover (Nayak) method</b> for smaller limits: working capital need 25% of projected turnover; bank finances 20%, borrower margin 5%.</li>
+<li><b>Cash budget method</b> for seasonal or service businesses. Operating cycle = raw material + WIP + finished goods + receivables days − payables days.</li></ul>
+<h4>MSME (from 1 Apr 2025) & priority sector</h4>
+<table class="pt"><tr><th>Type</th><th>Investment</th><th>Turnover</th></tr><tr><td>Micro</td><td>≤ ₹2.5 cr</td><td>≤ ₹10 cr</td></tr><tr><td>Small</td><td>≤ ₹25 cr</td><td>≤ ₹100 cr</td></tr><tr><td>Medium</td><td>≤ ₹125 cr</td><td>≤ ₹500 cr</td></tr></table>
+<ul><li>Collateral-free loans to micro and small units up to ₹10 lakh; CGTMSE guarantee cover up to ₹10 crore.</li>
+<li><b>PSL targets (domestic SCBs):</b> 40% of ANBC/CEOBE; agriculture 18% (small & marginal farmers 10%); micro enterprises 7.5%; weaker sections 12%.</li></ul>`},
+{id:"npa",t:"NPA, provisioning & ECL",sc:["I","II","III","IV"],topic:"Credit & NPA",h:`
+<ul><li><b>NPA:</b> interest/instalment overdue &gt; 90 days; CC/OD "out of order" for 90 days; crop loans – 2 crop seasons (short duration) or 1 season (long duration).</li>
+<li><b>SMA:</b> SMA-0 up to 30 days, SMA-1 31–60, SMA-2 61–90. Classification is borrower-wise.</li></ul>
+<table class="pt"><tr><th>Asset class</th><th>Provision</th></tr>
+<tr><td>Standard</td><td>0.40% general; farm & SME 0.25%; CRE 1%; CRE-RH 0.75%</td></tr>
+<tr><td>Sub-standard (NPA ≤ 12 months)</td><td>15%; unsecured exposure 25%</td></tr>
+<tr><td>Doubtful D1 / D2 / D3</td><td>Secured part 25% / 40% / 100%; unsecured part 100%</td></tr>
+<tr><td>Loss</td><td>100%</td></tr></table>
+<ul><li><b>Prudential Framework (7 Jun 2019):</b> review within 30 days of default; inter-creditor agreement; additional provision 20% if no resolution plan within 180 days of review period, total 35% after 365 days.</li>
+<li><b>Expected Credit Loss:</b> final RBI directions of 27 Apr 2026 apply from <b>1 April 2027</b> – Stage 1 (12-month ECL), Stage 2 (significant increase in credit risk, lifetime ECL), Stage 3 (credit-impaired). NPA definition stays the same.</li>
+<li><b>Wilful defaulter (2024 directions):</b> outstanding ₹25 lakh+, show-cause notice and personal hearing; no additional facilities or restructuring.</li>
+<li><b>Fraud (2024 directions):</b> natural justice – show-cause notice with at least 21 days to reply before classifying fraud.</li></ul>`},
+{id:"basel",t:"Basel III, capital & PCA",sc:["II","III","IV"],topic:"Regulation",h:`
+<table class="pt"><tr><th>Requirement (India)</th><th>Minimum</th></tr>
+<tr><td>CET1</td><td>5.5% (+2.5% CCB = 8%)</td></tr><tr><td>Tier 1</td><td>7%</td></tr><tr><td>Total CRAR</td><td>9% (+2.5% CCB = 11.5%)</td></tr>
+<tr><td>Leverage ratio</td><td>4% D-SIBs, 3.5% other banks</td></tr><tr><td>LCR / NSFR</td><td>100% each</td></tr></table>
+<ul><li><b>D-SIBs:</b> SBI, HDFC Bank, ICICI Bank – extra CET1 surcharge.</li>
+<li><b>Large exposures:</b> single counterparty 20% of Tier 1 (board can allow 25%); group 25%.</li>
+<li><b>PCA triggers (2021 framework):</b> CRAR below 10.25% (Threshold 1), below 7.75% (Threshold 2); Net NPA 6%+ (T1), 9%+ (T2), 12%+ (T3); also CET1 and leverage. Restrictions: dividends, branch expansion, risky lending.</li>
+<li><b>Pillars:</b> 1 minimum capital (credit, market, operational risk), 2 supervisory review (ICAAP), 3 market discipline (disclosure).</li></ul>`},
+{id:"risk",t:"Risk management & ALM",sc:["III","IV"],topic:"Regulation",h:`<ul>
+<li><b>Credit risk:</b> rating models, PD × LGD × EAD = expected loss; concentration limits; early warning signals (cheque returns, delayed stock statements, diversion of funds).</li>
+<li><b>Market risk:</b> interest rate and price risk on investments; duration and modified duration; Value at Risk.</li>
+<li><b>Liquidity risk:</b> structural liquidity statement in time buckets; LCR (30-day stress), NSFR (one-year funding).</li>
+<li><b>Interest rate risk in the banking book:</b> gap analysis (RSA − RSL), earnings and economic-value view.</li>
+<li><b>Operational risk:</b> people, process, systems, external events – fraud and cyber risk; Basel III standardised approach.</li>
+<li><b>Three lines of defence:</b> business, risk & compliance, internal audit. Board-level Risk Management Committee; Chief Risk Officer independent of business.</li>
+<li><b>Profitability:</b> NIM = (interest income − interest expense) ÷ average earning assets; RAROC = risk-adjusted return ÷ economic capital; cost-to-income ratio.</li></ul>`},
+{id:"pay",t:"Payments & digital banking",sc:["I","II","III"],topic:"Customer Service",h:`<ul>
+<li><b>NEFT</b> 24×7 since 16 Dec 2019, no minimum; <b>RTGS</b> 24×7 since 14 Dec 2020, minimum ₹2 lakh; <b>IMPS</b> up to ₹5 lakh.</li>
+<li><b>NPCI</b> runs UPI, IMPS, RuPay, NACH, AePS, BBPS, FASTag (NETC).</li>
+<li><b>e₹ (CBDC):</b> wholesale pilot Nov 2022, retail pilot Dec 2022.</li>
+<li><b>Account Aggregator:</b> consent-based data sharing (RBI-regulated NBFC-AA); interoperability and deposit data in consolidated statements targeted by 31 Dec 2026.</li>
+<li><b>Digital lending:</b> loans disbursed and repaid directly between bank and borrower accounts; Key Fact Statement with APR; cooling-off period.</li></ul>`},
+{id:"schemes",t:"Financial inclusion & government schemes",sc:["I","II"],topic:"Customer Service",h:`
+<table class="pt"><tr><th>Scheme</th><th>Key facts</th></tr>
+<tr><td>PMJDY (2014)</td><td>Basic savings account, RuPay card, overdraft facility</td></tr>
+<tr><td>PMJJBY</td><td>Life cover ₹2 lakh, premium ₹436/year, age 18–50</td></tr>
+<tr><td>PMSBY</td><td>Accident cover ₹2 lakh, premium ₹20/year, age 18–70</td></tr>
+<tr><td>Atal Pension Yojana</td><td>Pension ₹1,000–5,000/month, joining age 18–40</td></tr>
+<tr><td>PM Mudra</td><td>Shishu ≤ ₹50k, Kishor ₹50k–5 lakh, Tarun ₹5–10 lakh, Tarun Plus ₹10–20 lakh</td></tr>
+<tr><td>Stand-Up India</td><td>₹10 lakh – ₹1 crore for SC/ST and women entrepreneurs (greenfield)</td></tr>
+<tr><td>KCC</td><td>Interest subvention: 7% with 3% prompt-repayment incentive → 4%; limit under the scheme raised to ₹5 lakh (Budget 2025)</td></tr></table>`},
+{id:"econ",t:"Economy & Budget 2026-27",sc:["I","II","III","IV"],topic:"Budget 2026-27",h:`<ul>
+<li><b>Fiscal deficit</b> = total expenditure − non-debt receipts; <b>primary deficit</b> = fiscal deficit − interest; <b>revenue deficit</b> = revenue expenditure − revenue receipts.</li>
+<li><b>Budget 2026-27:</b> fiscal deficit 4.3% of GDP; revenue deficit 1.5%; total expenditure ₹53.47 lakh crore; capex ₹12.22 lakh crore; debt-to-GDP 55.6%, target 50 ± 1% by 2030-31; gross market borrowing ₹17.2 lakh crore.</li>
+<li><b>Banking in the Budget:</b> High Level Committee on Banking for Viksit Bharat (chair Suresh N. Patel, 6-month tenure, constituted 30 Oct 2026); PFC–REC restructuring; IFSC unit tax holiday 10 → 20 years.</li>
+<li><b>Tax:</b> Income Tax Act, 2025 in force from 1 Apr 2026; new-regime slabs unchanged – income up to ₹12 lakh effectively tax-free (₹60,000 rebate).</li>
+<li><b>Growth:</b> RBI projects 7.1% for 2026-27 (Oct 2026); IMF 7%.</li></ul>`},
+{id:"apt",t:"Aptitude formula & rule sheet",sc:["I","II","III"],topic:"Quantitative Aptitude",h:`
+<h4>Quant</h4><ul>
+<li>Successive % change a and b: a + b + ab/100. Two discounts 10% and 5% = 14.5%.</li>
+<li>CI − SI for 2 years = P(r/100)²; for 3 years = P(r/100)²(3 + r/100).</li>
+<li>Work: A in a days, B in b days → together ab/(a + b) days.</li>
+<li>Train crossing a pole: length ÷ speed; crossing a platform: (train + platform) ÷ speed. km/h × 5/18 = m/s.</li>
+<li>Alligation: (dearer − mean) : (mean − cheaper) = cheaper : dearer quantity.</li>
+<li>Partnership: profit ∝ capital × time. Probability: favourable ÷ total; nCr = n!/(r!(n − r)!).</li></ul>
+<h4>Reasoning</h4><ul>
+<li>Circle facing centre: left = clockwise, right = anticlockwise (reverse if facing outside).</li>
+<li>Syllogism: "Some A are B" + "All B are C" ⇒ "Some A are C". Two particular statements ⇒ no definite conclusion. "Either–or" only for complementary pairs.</li>
+<li>Inequality: a conclusion follows only if every sign on the path points the same way (≥ with > gives >).</li>
+<li>Puzzles: draw the grid first, fix definite clues, branch cases for "either" clues.</li></ul>
+<h4>English</h4><ul>
+<li>Neither/either … nor/or: verb agrees with the nearer subject.</li>
+<li>"Since" + point of time; "for" + period. "Hardly/scarcely … when"; "no sooner … than".</li>
+<li>RC: read the questions first, then the passage; answer only from the text.</li>
+<li>Para jumble: find the opening (independent idea) and the pairs linked by pronouns/connectors.</li></ul>`},
+{id:"interview",t:"Interview & case-study preparation",sc:["II","III","IV"],topic:"Credit & NPA",h:`
+<ul><li><b>Answer frame (STAR):</b> Situation → Task → Action → Result; end with what you learned.</li>
+<li><b>Scale II likely questions:</b> Why leave your current bank? Walk through a working-capital assessment you did. How do you handle an SMA-2 account?</li>
+<li><b>Scale III:</b> Your branch has a sudden spike in MSME NPAs – your first 30 days? A staff member suspects a fraud – what do you do? How do you balance targets with compliance?</li>
+<li><b>Scale IV:</b> How would ECL from April 2027 change your credit strategy? Plan to grow CASA in a saturated market? Your view on the High Level Committee on Banking for Viksit Bharat.</li>
+<li><b>Always ready:</b> your bank's key numbers (CASA %, GNPA/NNPA, CRAR), the latest repo rate, one recent RBI circular from your area.</li></ul>`},
+{id:"sources",t:"Recommended sources",sc:["I","II","III","IV"],topic:"",h:`<ul>
+<li><b>IIBF:</b> JAIIB – Principles & Practices of Banking; Accounting & Financial Management; Retail Banking & Wealth Management; Indian Economy & Financial System. CAIIB – Advanced Bank Management; Bank Financial Management; Advanced Business & Financial Management; Banking Regulations & Business Laws.</li>
+<li><b>RBI:</b> Master Directions (KYC, IRACP/ECL, PSL, Basel III), MPC statements, Annual Report and Financial Stability Report – <a href="https://www.rbi.org.in" target="_blank" rel="noopener">rbi.org.in</a>.</li>
+<li><b>Government:</b> Budget at a Glance and Economic Survey (indiabudget.gov.in), PIB releases.</li>
+<li><b>Practice:</b> previous papers and monthly current-affairs PDFs from ixambee, Oliveboard, Adda247 and Career Power; this app's practice and mocks.</li></ul>
+<p class="note">Figures in these notes were checked in November 2026. Rates, limits and rules change – confirm with the latest RBI circular before your exam.</p>`}
+];
+let studyScale="All";
+function renderStudy(){
+  const box=$("v-study");
+  const sc=["All","I","II","III","IV"].map(s=>`<button class="chip ${studyScale===s?"on":""}" data-ss="${s}">${s==="All"?"All scales":"Scale "+s}</button>`).join("");
+  const rm=studyScale==="All"?Object.keys(ROADMAP):[studyScale];
+  const mods=STUDY.filter(m=>studyScale==="All"||m.sc.includes(studyScale));
+  box.innerHTML=`<div class="card"><h2>Study material</h2><p class="stat">Scale-wise notes for PSB and RRB lateral-entry exams. Pick your scale, follow the plan, then practise each topic.</p><div class="chips" id="ssc" style="margin-top:10px">${sc}</div></div>`
+  +rm.map(k=>{const r=ROADMAP[k];return `<div class="card"><div class="tags"><span class="tag">Scale ${k}</span></div><h2>${r.t}</h2><p class="stat" style="margin-bottom:8px">${r.ex}</p>
+   <h4 class="sh">What the exam rewards</h4><ul class="sl">${r.focus.map(x=>`<li>${x}</li>`).join("")}</ul>
+   <h4 class="sh">Study plan</h4><ul class="sl">${r.plan.map(x=>`<li>${x}</li>`).join("")}</ul></div>`}).join("")
+  +`<h2 style="margin:6px 2px 10px">Topic notes</h2>`
+  +mods.map(m=>`<details class="card sd"><summary><span>${m.t}</span><span class="tag">Scale ${m.sc.join(", ")}</span></summary><div class="sb">${m.h}
+   ${m.topic?`<button class="btn sec" data-pt="${m.topic}" style="margin-top:12px">Practise: ${m.topic}</button>`:""}</div></details>`).join("");
+}
+$("v-study").addEventListener("click",e=>{
+  const b=e.target.closest("[data-ss]");if(b){studyScale=b.dataset.ss;renderStudy();return;}
+  const p=e.target.closest("[data-pt]");if(p){st.topic=p.dataset.pt;st.exam="All";st.lv="All";st.scale="All";$("f-exam").value="All";chips("f-topic",TOPICS,"topic");chips("f-lv",["Easy","Moderate","Hard"],"lv");chips("f-scale",["I","II","III","IV"],"scale");upd();startQuiz(pool(),"practice");}
+});
 
 function renderCal(){
   const box=$("v-cal");const tdy=today();const ev=calEvents();
