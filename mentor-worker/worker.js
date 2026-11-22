@@ -1,6 +1,6 @@
 // Lateral Banker Prep – Ask Mentor backend (Cloudflare Worker, free plan)
 // Keeps the Gemini API key secret. Set it in Cloudflare: Settings › Variables › Secret "GEMINI_API_KEY".
-// Optional variable MODEL (default: gemini-flash-latest).
+// Optional variables: MODEL (default: gemini-flash-latest); WEB_SEARCH = "off" to disable Google Search grounding.
 const SYSTEM = `You are "Lateral Banker Prep Mentor", a friendly, precise tutor for Indian bank officer exams:
 PSB lateral entry (SBI CBO/SCO, PNB LBO, BOM Generalist, Union Bank, BoB, Canara, BOI, Indian Bank, Central Bank, Punjab & Sind Bank),
 IBPS SO, IBPS RRB Officer Scale II/III, RBI lateral recruitment, JAIIB, CAIIB and internal bank promotion exams, Scales I–IV.
@@ -9,6 +9,11 @@ under about 200 words unless asked for more. Prefer the app data given below for
 If a fact may have changed or you are not sure, say so and point to rbi.org.in, iibf.org.in or the bank's official site.
 Never invent rates, dates, vacancy counts or circular numbers. For practice requests, give MCQs with answers and one-line explanations.
 Scale III/IV case answers should be from a branch-head or manager's view. Stay on banking, finance, exams and careers.`;
+
+const SEARCH_RULES = `
+When Google Search results are available, use them for anything current (rates, dates, notifications, results, circulars) and prefer
+official sources (rbi.org.in, iibf.org.in, ibps.in, bank websites, pib.gov.in) over coaching blogs. Give the best single answer first,
+then 2–4 supporting points. If sources disagree, say so and state which is official.`;
 
 export default {
   async fetch(req, env) {
@@ -25,21 +30,30 @@ export default {
     if (!msgs.length || msgs[msgs.length - 1].role !== "user") return json({ error: "No question" }, 400);
     const ctx = String(body.context || "").slice(0, 8000);
     const model = env.MODEL || "gemini-flash-latest";
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM + (ctx ? "\n\nApp data (latest):\n" + ctx : "") }] },
-        contents: msgs,
-        generationConfig: { temperature: 0.4, maxOutputTokens: 1000 }
-      })
+    const payload = (withSearch) => JSON.stringify({
+      systemInstruction: { parts: [{ text: SYSTEM + SEARCH_RULES + (ctx ? "\n\nApp data (latest):\n" + ctx : "") }] },
+      contents: msgs,
+      ...(withSearch ? { tools: [{ google_search: {} }] } : {}),
+      generationConfig: { temperature: 0.3, maxOutputTokens: 1200 }
     });
+    const call = (withSearch) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY }, body: payload(withSearch)
+    });
+    // 1) Search the web (Google Search grounding). 2) If search isn't available on this key/model, answer without it.
+    let r = await call(env.WEB_SEARCH !== "off");
+    let searched = env.WEB_SEARCH !== "off";
+    if (searched && (r.status === 400 || r.status === 403 || r.status === 429)) { r = await call(false); searched = false; }
     if (r.status === 429) return json({ error: "busy" }, 429);
     let d = {};
     try { d = await r.json(); } catch {}
     if (!r.ok) return json({ error: (d.error && d.error.message) || "Upstream error" }, 502);
-    const text = ((d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) || [])
-      .map(p => p.text || "").join("").trim();
-    return json({ text: text || "Sorry, I couldn't answer that. Please rephrase." });
+    const cand = (d.candidates && d.candidates[0]) || {};
+    const text = ((cand.content && cand.content.parts) || []).map(p => p.text || "").join("").trim();
+    const gm = cand.groundingMetadata || {};
+    const seen = new Set();
+    const sources = (gm.groundingChunks || []).map(c => c.web).filter(w => w && w.uri)
+      .filter(w => !seen.has(w.uri) && seen.add(w.uri)).slice(0, 5).map(w => ({ title: (w.title || "Source").slice(0, 80), uri: w.uri }));
+    const queries = (gm.webSearchQueries || []).slice(0, 3);
+    return json({ text: text || "Sorry, I couldn't answer that. Please rephrase.", sources, queries, searched });
   }
 };

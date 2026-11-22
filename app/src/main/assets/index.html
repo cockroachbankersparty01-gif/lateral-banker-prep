@@ -117,6 +117,10 @@ details.sd summary .tag{margin-left:auto;font-weight:600}
 .aib.gptmain i{background:#fff!important;color:#10a37f}
 .moreai summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--mut);padding:4px 0 8px;list-style:none}
 .moreai summary::-webkit-details-marker{display:none}.moreai summary::after{content:" ▾"}
+.msrc{border-top:1px solid var(--line);margin-top:8px;padding-top:6px;font-size:12.5px}
+.msrc .msh{font-weight:700;color:var(--mut);text-transform:uppercase;font-size:11px;letter-spacing:.05em;margin-bottom:2px}
+.msrc a{display:block;color:var(--navy2);padding:3px 0;word-break:break-word}
+.msrc .mq{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.msrc .mq a.chip{display:inline-block;font-size:12px;padding:4px 10px;text-decoration:none}
 </style>
 </head>
 <body>
@@ -493,7 +497,7 @@ function md(t){
   return out+(inL?"</ul>":"");
 }
 function drawChat(){
-  $("chatlog").innerHTML=CHAT.map(m=>`<div class="msg ${m.role==="user"?"u":"b"}${m.err?" err":""}">${m.role==="user"?esc(m.content):md(m.content||"Thinking…")}</div>`).join("");
+  $("chatlog").innerHTML=CHAT.map(m=>`<div class="msg ${m.role==="user"?"u":"b"}${m.err?" err":""}">${m.role==="user"?esc(m.content):md(m.content||(MENTOR_URL?"Searching the web and preparing your answer…":"Thinking…"))+srcHtml(m)}</div>`).join("");
   $("sugg").style.display=CHAT.length?"none":"flex";$("chatintro").style.display=CHAT.length?"none":"block";
   const cb=$("chatbody");cb.scrollTop=cb.scrollHeight;
 }
@@ -520,7 +524,7 @@ async function sendChat(){
   hist[0]={role:"user",content:SYS+"\n\nToday's date: "+today()+"\n\nCandidate: "+hist[0].content};
   try{
     const r=await sample(hist,{cache:false,signal:chatCtl.signal,tools:TOOLS,onText:({text})=>{bot.content=text;drawChat();}});
-    bot.content=r.text||bot.content||"Sorry, I couldn't answer that.";
+    bot.content=r.text||bot.content||"Sorry, I couldn't answer that.";bot.src=r.sources||[];bot.qs=r.queries||[];
   }catch(e){
     bot.err=true;
     bot.content=e&&e.code==="rate_limited"?"The free AI limit is busy right now. Please wait a minute or use Ask ChatGPT.":e&&e.code==="not_granted"?"The chatbot isn't enabled for this view.":(e&&e.text)||"Something went wrong. Please try again.";
@@ -850,7 +854,7 @@ let MENTOR_URL="";
 try{MENTOR_URL=localStorage.getItem("lbp_mentor")||"";}catch(e){}
 function mentorUi(){const on=!!MENTOR_URL;$("chatsend").style.display=on?"":"none";
   $("chatsend").textContent="Ask";
-  $("chatnote").textContent=on?"Answers come from Google Gemini (free tier) inside the app; busy times may hit daily limits – then use Ask ChatGPT. Don't share personal or account details. AI answers may contain errors – check official sources.":"Opens ChatGPT with your question and exam context already typed – free with your own ChatGPT account (free-plan usage limits apply). AI answers may contain errors – check official sources.";
+  $("chatnote").textContent=on?"Answers come from Google Gemini with live Google Search (free tier), with sources shown under each answer; busy times may hit daily limits – then use Ask ChatGPT. Don't share personal or account details. AI answers may contain errors – check official sources.":"Opens ChatGPT with your question and exam context already typed – free with your own ChatGPT account (free-plan usage limits apply). AI answers may contain errors – check official sources.";
   $("chatintro").textContent=on?"Ask anything about banking awareness, RBI policy, JAIIB/CAIIB, promotions, exam pattern or interviews – answers appear right here.":"Type your question or tap a suggestion, then tap Ask ChatGPT. Your question goes with exam-mentor instructions.";}
 (async()=>{mentorUi();try{const r=await fetch(CONFIG_URL+"?t="+Date.now(),{cache:"no-store"});if(r.ok){const c=await r.json();const u=/^https:\/\//.test(c.mentorUrl||"")?c.mentorUrl:"";MENTOR_URL=u;try{localStorage.setItem("lbp_mentor",u);}catch(e){}mentorUi();}}catch(e){}})();
 function mentorCtx(){
@@ -866,7 +870,12 @@ async function workerSample(hist,opts){
   let d={};try{d=await r.json();}catch(e){}
   if(!r.ok)throw{code:"error",text:"The in-app mentor is unavailable right now. Please use Ask ChatGPT."};
   if(opts&&opts.onText)opts.onText({text:d.text||""});
-  return {text:d.text||""};
+  return {text:d.text||"",sources:d.sources||[],queries:d.queries||[]};
+}
+function srcHtml(m){
+  const s=(m.src||[]).filter(x=>/^https:\/\//.test(x.uri||""));const q=m.qs||[];
+  if(!s.length&&!q.length)return "";
+  return `<div class="msrc">${s.length?`<div class="msh">Sources</div>${s.map((x,i)=>`<a href="${esc(x.uri)}" target="_blank" rel="noopener">${i+1}. ${esc(x.title)}</a>`).join("")}`:""}${q.length?`<div class="mq">${q.map(t=>`<a class="chip" href="https://www.google.com/search?q=${encodeURIComponent(t)}" target="_blank" rel="noopener">Google: ${esc(t)}</a>`).join("")}</div>`:""}</div>`;
 }
 
 function renderCal(){

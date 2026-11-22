@@ -6,5 +6,5 @@
 4. Worker → Settings → Variables and Secrets → Add → Type: Secret, Name: `GEMINI_API_KEY`, Value: your key → Deploy.
 5. Copy the worker URL (https://lbp-mentor.<your-subdomain>.workers.dev) into `data/config.json` as `mentorUrl`. Installed apps pick it up on next launch – no new APK needed.
 
-Optional: add a plain variable `MODEL` to choose a specific Gemini model (default `gemini-flash-latest`).
+Optional plain variables: `MODEL` (default `gemini-flash-latest`) and `WEB_SEARCH` = `off` to turn off Google Search grounding (on by default; answers then show sources).
 Free-tier limits apply per Google project and are shared by all app users. Free-tier prompts may be used by Google to improve its products.
