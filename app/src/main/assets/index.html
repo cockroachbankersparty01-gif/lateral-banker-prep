@@ -113,6 +113,7 @@ details.sd summary .tag{margin-left:auto;font-weight:600}
 .sb h4,.sh{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--navy2);margin:12px 0 4px}
 .sb ul,.sl{padding-left:18px;font-size:14px;line-height:1.55}.sb li,.sl li{margin-bottom:4px}
 .sb .pt td{text-align:left!important;white-space:normal!important}
+.tag.yr{background:#fff1e5!important;color:#a24d12!important}
 </style>
 </head>
 <body>
@@ -139,6 +140,7 @@ details.sd summary .tag{margin-left:auto;font-weight:600}
       <label class="f">Scale</label><div class="chips" id="f-scale"></div>
       <label class="f">Section / Topic</label><div class="chips" id="f-topic"></div>
       <label class="f">Level</label><div class="chips" id="f-lv"></div>
+      <label class="f">Past papers</label><div class="chips" id="f-py"><button class="chip on" data-p="all" type="button">All questions</button><button class="chip" data-p="asked" type="button">Only topics asked in past papers</button><button class="chip" data-p="any" type="button">Asked + question types seen</button></div>
       <label class="f">Mode</label>
       <div class="chips" id="f-mode">
         <button class="chip on" data-m="practice">Practice (instant answer)</button>
@@ -338,7 +340,7 @@ const GIST=[
 {title:"Circular card: Wilful Defaulters (2024)",rows:[["Issued","July 30, 2024"],["Threshold","Outstanding ₹25 lakh+"],["Review","Identification & Review Committees"]],pts:["Borrower gets a show-cause notice and personal hearing opportunity.","Wilful defaulters are barred from additional credit and restructuring."],src:[["RBI – Master Direction","https://www.rbi.org.in"]]}
 ];
 const TOPICS=[...new Set(Q.map(q=>q.t))];
-let st={exam:"All",scale:"All",topic:"All",lv:"All",mode:"practice"};
+let st={exam:"All",scale:"All",topic:"All",lv:"All",py:"all",mode:"practice"};
 let quiz=null,tm=null;
 const $=id=>document.getElementById(id);
 const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -350,9 +352,10 @@ function chips(el,arr,key){
   $(el).innerHTML=["All",...arr].map(v=>`<button class="chip ${st[key]===v?'on':''}" data-v="${v}">${v}</button>`).join("");
   $(el).onclick=e=>{const b=e.target.closest(".chip");if(!b)return;st[key]=b.dataset.v;chips(el,arr,key);upd();};
 }
-function pool(){return Q.filter(q=>(st.exam==="All"||q.x.includes(st.exam))&&(st.scale==="All"||q.s.includes(st.scale))&&(st.topic==="All"||q.t===st.topic)&&(st.lv==="All"||(q.lv||"Moderate")===st.lv));}
+function pool(){return Q.filter(q=>(st.exam==="All"||q.x.includes(st.exam))&&(st.scale==="All"||q.s.includes(st.scale))&&(st.topic==="All"||q.t===st.topic)&&(st.lv==="All"||(q.lv||"Moderate")===st.lv)&&(st.py==="all"||(()=>{const a=askedTag(q);return a&&(st.py==="any"||a.kind==="topic");})()));}
 function upd(){const n=pool().length;$("count").textContent=n+" questions match"+(st.mode==="mock"?` · ${Math.ceil(n*36/60)} min`:"");$("start").disabled=!n;}
 $("f-exam").innerHTML=["All",...ALL_EX].map(v=>`<option>${v}</option>`).join("");$("f-exam").onchange=e=>{st.exam=e.target.value;upd();};chips("f-scale",["I","II","III","IV"],"scale");chips("f-topic",TOPICS,"topic");chips("f-lv",["Easy","Moderate","Hard"],"lv");
+$("f-py").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;st.py=b.dataset.p;[...$("f-py").children].forEach(c=>c.classList.toggle("on",c===b));upd();};
 $("f-mode").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;st.mode=b.dataset.m;[...$("f-mode").children].forEach(c=>c.classList.toggle("on",c===b));upd();};
 upd();
 
@@ -377,7 +380,7 @@ function renderQ(){
   const q=quiz.qs[quiz.i],n=quiz.qs.length,a=quiz.ans[q.id];
   $("qnum").textContent=`Question ${quiz.i+1} of ${n}`;
   $("prog").style.width=((quiz.i+1)/n*100)+"%";
-  $("qtags").innerHTML=`<span class="tag">${q.t}</span>${q.lv?`<span class="tag lv-${q.lv}">${q.lv}</span>`:""}<span class="tag">Scale ${q.s.join("/")}</span>`;
+  $("qtags").innerHTML=`<span class="tag">${q.t}</span>${q.lv?`<span class="tag lv-${q.lv}">${q.lv}</span>`:""}<span class="tag">Scale ${q.s.join("/")}</span>${askedHtml(q)}`;
   $("qctx").style.display=q.ctx?"block":"none";$("qctx").textContent=q.ctx||"";
   $("qtext").textContent=q.q;
   const reveal=quiz.mode==="practice"&&a!==undefined;
@@ -402,7 +405,7 @@ function finish(){
   $("rc").textContent=c;$("rw").textContent=w;$("rs").textContent=sk;
   $("racc").textContent=(c+w?`Accuracy ${Math.round(c/(c+w)*100)}%`:"No questions attempted")+(neg?" · −0.25 per wrong answer":"");
   $("review").innerHTML=quiz.qs.map((q,i)=>{const a=quiz.ans[q.id];const r=a===undefined?"Skipped":a===q.a?"Correct":"Wrong";
-    return `<div class="card"><div class="tags"><span class="tag">${i+1}. ${r}</span><span class="tag">${q.t}</span></div>${q.ctx?`<div class="ctx">${esc(q.ctx)}</div>`:""}<h3 style="white-space:pre-line">${esc(q.q)}</h3>
+    return `<div class="card"><div class="tags"><span class="tag">${i+1}. ${r}</span><span class="tag">${q.t}</span>${askedHtml(q)}</div>${q.ctx?`<div class="ctx">${esc(q.ctx)}</div>`:""}<h3 style="white-space:pre-line">${esc(q.q)}</h3>
     ${a!==undefined&&a!==q.a?`<p class="bad-t" style="font-size:14px">Your answer: ${q.o[a]}</p>`:""}
     <p class="ok-t" style="font-size:14px;font-weight:600">Answer: ${q.o[q.a]}</p><div class="exp">${q.e}<div class="src">${String(q.src).startsWith("Pattern:")?"Based on "+String(q.src).slice(9):"Source: "+q.src}</div></div></div>`}).join("");
   show("result");
@@ -825,6 +828,17 @@ $("v-study").addEventListener("click",e=>{
   const b=e.target.closest("[data-ss]");if(b){studyScale=b.dataset.ss;renderStudy();return;}
   const p=e.target.closest("[data-pt]");if(p){st.topic=p.dataset.pt;st.exam="All";st.lv="All";st.scale="All";$("f-exam").value="All";chips("f-topic",TOPICS,"topic");chips("f-lv",["Easy","Moderate","Hard"],"lv");chips("f-scale",["I","II","III","IV"],"scale");upd();startQuiz(pool(),"practice");}
 });
+
+// ---- "Asked in" tags (only where a source confirms the year) ----
+function askedTag(q){
+  const s=String(q.src||"");
+  const topic=/^Topic|asked|Topic reported|insurance-claim|GA list|JAIIB IE&IFS/i.test(s)||q.t==="Asked in Past Papers";
+  const m=[["SBI CBO 2026",/SBI CBO 2026/],["PNB LBO 2026",/PNB LBO 2026/],["JAIIB Nov 2026",/JAIIB IE&IFS (Nov )?2026/],["IBPS SO 2026",/IBPS SO 2026/]];
+  const hits=m.filter(([,r])=>r.test(s)).map(([n])=>n);
+  if(!hits.length)return null;
+  return {kind:topic?"topic":"type",label:hits.join(", ")};
+}
+function askedHtml(q){const a=askedTag(q);if(!a)return "";return `<span class="tag yr" title="${a.kind==="topic"?"This topic was reported as asked in":"This question type appeared in"} ${a.label}">${a.kind==="topic"?"Asked":"Type seen"}: ${a.label}</span>`;}
 
 function renderCal(){
   const box=$("v-cal");const tdy=today();const ev=calEvents();
