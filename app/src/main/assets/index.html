@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lateral Banker Prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#14274e;--navy2:#1f3b73;--acc:#e8772e;--bg:#f4f6fa;--card:#fff;--ink:#1b2333;--mut:#667085;--ok:#1a8f5a;--bad:#c63b3b;--line:#e3e7ef;--r:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+header{background:#0F1729;color:#fff;padding:16px 18px 0}
+header h1{font-size:19px;font-weight:700}
+
+header p{font-size:12.5px;opacity:.75;margin-top:2px}
+nav{display:flex;gap:4px;margin-top:14px;overflow-x:auto}
+nav button{background:none;border:0;color:#cfd8ea;font:600 14px Inter,sans-serif;padding:10px 12px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav button.on{color:#fff;border-bottom-color:var(--acc)}
+main{max-width:720px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+h2{font-size:17px;margin-bottom:10px}
+h3{font-size:15px;margin-bottom:6px}
+label.f{display:block;font-size:12px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font:500 13px Inter,sans-serif;cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--navy2);color:#fff;border-color:var(--navy2)}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font:700 15px Inter,sans-serif;cursor:pointer;background:var(--acc);color:#fff;margin-top:16px}
+.btn.sec{background:#fff;color:var(--navy2);border:1.5px solid var(--navy2)}
+.btn:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.stat{font-size:13px;color:var(--mut)}
+.qtop{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mut);margin-bottom:10px}
+.timer{font-weight:700;color:var(--navy2);font-variant-numeric:tabular-nums}
+.timer.low{color:var(--bad)}
+.bar{height:5px;background:var(--line);border-radius:9px;overflow:hidden;margin-bottom:14px}
+.bar i{display:block;height:100%;background:var(--acc);transition:width .3s}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.tag{font-size:11px;font-weight:600;background:#eef2fa;color:var(--navy2);border-radius:6px;padding:2px 7px}
+.qtext{font-size:16px;font-weight:600;margin-bottom:14px}
+.opt{display:block;width:100%;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;font:500 14.5px Inter,sans-serif;color:var(--ink);cursor:pointer}
+.opt.sel{border-color:var(--navy2);background:#eef2fa}
+.opt.ok{border-color:var(--ok);background:#e8f6ef}
+.opt.bad{border-color:var(--bad);background:#fbecec}
+.exp{background:#fff8f1;border-left:4px solid var(--acc);padding:10px 12px;border-radius:8px;font-size:13.5px;margin-top:6px}
+.score{font-size:40px;font-weight:700;color:var(--navy)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:12px}
+.grid3 div{background:var(--bg);border-radius:10px;padding:10px}
+.grid3 b{display:block;font-size:20px}
+.ok-t{color:var(--ok)}.bad-t{color:var(--bad)}
+.gist dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;margin:8px 0}
+.gist dt{color:var(--mut)}.gist dd{font-weight:600}
+.gist ul{padding-left:18px;font-size:14px}
+.src{font-size:12px;color:var(--mut);margin-top:10px}
+.src a{color:var(--navy2)}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font:14px Inter,sans-serif;background:#fff}
+textarea{min-height:70px}
+.note{font-size:12.5px;color:var(--mut);margin-top:8px}
+.hide{display:none}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+.msg{max-width:88%;padding:10px 13px;border-radius:14px;margin-bottom:10px;font-size:14.5px;line-height:1.55;word-wrap:break-word}
+.msg.u{background:var(--navy2);color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+.msg.b{background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg.b ul{padding-left:18px;margin:4px 0}.msg.b p{margin:4px 0}
+.msg.err{background:#fbecec;border-color:#f1c4c4}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cw div{text-align:center;font-size:11px;font-weight:600;color:var(--mut);padding-bottom:4px}
+.cd{aspect-ratio:1;border:1px solid var(--line);background:#fff;border-radius:9px;font:500 13px Inter,sans-serif;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0}
+.cd span{display:flex;gap:2px;height:6px}.cd span i,.leg i,.evr>i{display:inline-block;width:6px;height:6px;border-radius:50%}
+.cd.has{background:#f8f9fc;font-weight:700}.cd.td{border:2px solid var(--acc)}.cd.sel{background:var(--navy2);color:#fff}
+.leg{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--mut);margin-top:10px}.leg i{width:9px;height:9px;margin-right:5px;vertical-align:-1px}
+.evr{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.evr:last-of-type{border-bottom:0}.evr>i{width:9px;height:9px;flex:none;margin-top:6px}
+table.yr{border-collapse:collapse;font-size:12px;width:100%;table-layout:fixed}
+.yr th:first-child{width:104px}
+.yr th{font-weight:600;color:var(--mut);padding:4px 0;text-align:center}.yr td{padding:3px 1px}
+.yr .yl{padding:5px 6px 5px 0;font-size:12px;line-height:1.25;word-wrap:break-word}.yr .yl span{color:var(--mut);font-size:11px}
+.yr .cur{background:#fff1e5}.yb{height:16px;border-radius:4px}.yb.yo{background:#1f3b73}.yb.ya{background:#c9d2e3}
+#fab{position:fixed;right:16px;bottom:18px;z-index:40;display:flex;align-items:center;gap:8px;background:var(--acc);color:#fff;border:0;border-radius:99px;padding:13px 18px 13px 15px;font:700 14.5px Inter,sans-serif;box-shadow:0 6px 18px rgba(20,39,78,.28);cursor:pointer}
+#fab.hide{display:none}
+#chatwrap{position:fixed;inset:0;z-index:50;background:rgba(20,39,78,.35);display:flex;align-items:flex-end;justify-content:center}
+#chatwrap.hide{display:none}
+#chatpanel{background:var(--bg);width:100%;max-width:560px;height:88vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 30px rgba(0,0,0,.2)}
+@media(min-width:700px){#chatwrap{align-items:flex-end;justify-content:flex-end;padding:20px}#chatpanel{height:min(720px,90vh);border-radius:18px}}
+#chathead{background:var(--navy);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+#chatclose{background:rgba(255,255,255,.12);border:0;color:#fff;width:44px;height:44px;border-radius:12px;font-size:18px;cursor:pointer}
+#chatbody{flex:1;overflow-y:auto;padding:14px}
+#chatform{display:flex;gap:8px;padding:10px 12px;background:#fff;border-top:1px solid var(--line)}
+#chatin{min-height:44px;max-height:120px;flex:1;resize:none}
+#chatsend{width:auto;margin:0;padding:0 18px}
+main{padding-bottom:84px}
+#aiapps{background:#fff;padding:0 12px 8px}
+.aih{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:2px 0 6px}
+.aig{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.aib{display:flex;align-items:center;gap:7px;min-height:44px;padding:6px 8px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font:600 13px Inter,sans-serif;text-decoration:none;cursor:pointer}
+.aib i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;color:#fff;font-size:11px;font-weight:800;flex:none}
+.aib.fav{border-color:var(--acc);background:#fff8f1}
+.toast{z-index:60}
+#chatsend{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1 style="display:flex;align-items:center;gap:10px"><svg viewBox="-4 -4 108 104" width="40" height="38" aria-hidden="true" style="flex:none"><polyline points="8.5,25.5 50,5.5 78,19" fill="none" stroke="#F29F1A" stroke-width="5.2" stroke-linejoin="miter" stroke-miterlimit="10"></polyline><rect x="6" y="23" width="50.2" height="5.4" fill="#F29F1A"></rect><rect x="10.4" y="32.5" width="11.9" height="4.3" fill="#F29F1A"></rect><rect x="13.2" y="36.5" width="6.6" height="30.5" fill="#F29F1A"></rect><rect x="27.4" y="32.5" width="11.6" height="4.3" fill="#F29F1A"></rect><rect x="30.2" y="36.5" width="6.2" height="15" fill="#F29F1A"></rect><polyline points="2.8,84.9 11.7,84.9 11.7,72.6 28.7,72.6 28.7,57.5 45.7,57.5 45.7,42.5 62.6,42.5 62.6,26.8 76.6,26.8 89,14.4" fill="none" stroke="#F29F1A" stroke-width="5.4" stroke-linejoin="miter" stroke-miterlimit="10"></polyline><polygon points="97.4,6.5 93.6,22.4 81.5,10.3" fill="#F29F1A"></polygon><polygon points="47.2,67 53.4,61.2 53.4,79 47.2,77" fill="#FFFFFF"></polygon><polygon points="64.2,51.3 70.4,45.3 70.4,81.5 64.2,81.5" fill="#FFFFFF"></polygon><polygon points="80.8,33.7 86.8,27.7 86.8,81.5 80.8,81.5" fill="#FFFFFF"></polygon><rect x="70.4" y="70.6" width="20.9" height="5.6" fill="#FFFFFF"></rect><path d="M22.6 87 L28.4 81.2 L43.5 81.2 C41 78.2 37.5 76.4 33.2 75.6 L36.6 72.3 C42 73.4 46.6 76.2 50.9 80.4 C55 76.4 59.5 74 64.5 73.2 L64.5 78.6 C61 79.2 58.4 80 56.2 81.2 L95.3 81.2 L95.3 87 Z" fill="#FFFFFF"></path><rect x="44" y="85" width="13.8" height="5" rx="2.2" fill="#FFFFFF"></rect></svg><span style="font-family:Montserrat,Inter,sans-serif;font-weight:800;letter-spacing:.3px;line-height:1.1"><span style="color:#F29F1A">LATERAL</span> <span style="color:#fff">BANKER</span> <span style="color:#3AA7E8;font-weight:600;letter-spacing:3px">PREP</span></span></h1>
+  <p>PSB lateral entry · SBI · IBPS SO · BoB · PNB · Union · BOM · RBI · Scale I–IV</p>
+  <nav id="nav">
+    <button data-v="jobs" class="on">Latest Jobs</button>
+    <button data-v="home">Practice</button>
+    <button data-v="cal">Exam Calendar</button>
+    <button data-v="gist">Policy Gist</button>
+    <button data-v="mistakes">My Mistakes</button>
+    <button data-v="add">Add Question</button>
+  </nav>
+</header>
+<main>
+  <!-- HOME -->
+  <section id="v-home" class="hide">
+    <div class="card">
+      <h2>Build your test</h2>
+      <label class="f">Bank / Exam</label><select id="f-exam"></select>
+      <label class="f">Scale</label><div class="chips" id="f-scale"></div>
+      <label class="f">Topic</label><div class="chips" id="f-topic"></div>
+      <label class="f">Mode</label>
+      <div class="chips" id="f-mode">
+        <button class="chip on" data-m="practice">Practice (instant answer)</button>
+        <button class="chip" data-m="mock">Mock (timer, −0.25)</button>
+      </div>
+      <p class="stat" id="count" style="margin-top:12px"></p>
+      <button class="btn" id="start">Start test</button>
+    </div>
+    <div class="card"><p class="stat">Prototype question bank. Questions are tagged by exam, scale and topic. Mock mode gives 36 seconds per question and deducts a quarter mark for each wrong answer, like most bank exams.</p></div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="v-quiz" class="hide">
+    <div class="card">
+      <div class="qtop"><span id="qnum"></span><span class="timer" id="timer"></span></div>
+      <div class="bar"><i id="prog"></i></div>
+      <div class="tags" id="qtags"></div>
+      <div class="qtext" id="qtext"></div>
+      <div id="opts"></div>
+      <div id="expbox"></div>
+      <div class="row">
+        <button class="btn sec" id="prev">Previous</button>
+        <button class="btn" id="next">Next</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="v-result" class="hide">
+    <div class="card" style="text-align:center">
+      <p class="stat">Your score</p>
+      <div class="score" id="rscore"></div>
+      <div class="grid3">
+        <div><b class="ok-t" id="rc"></b><span class="stat">Correct</span></div>
+        <div><b class="bad-t" id="rw"></b><span class="stat">Wrong</span></div>
+        <div><b id="rs"></b><span class="stat">Skipped</span></div>
+      </div>
+      <p class="stat" id="racc" style="margin-top:10px"></p>
+    </div>
+    <h2>Review</h2>
+    <div id="review"></div>
+    <button class="btn" id="again">Back to tests</button>
+  </section>
+
+  <!-- CHAT -->
+
+
+  <!-- JOBS -->
+  <section id="v-jobs">
+    <div class="card"><h2>Current job openings</h2>
+      <p class="stat">PSB, IBPS and RBI officer, specialist and lateral-entry openings, plus the status and results of recruitments from the last 6 months.</p>
+      <div class="chips" id="jf" style="margin-top:10px">
+        <button class="chip on" data-j="open">Open now</button><button class="chip" data-j="proc">In process</button><button class="chip" data-j="res">Results</button><button class="chip" data-j="all">All</button>
+      </div>
+    </div>
+    <div id="jobs"><div class="card stat">Loading…</div></div>
+  </section>
+
+  <!-- CAL -->
+  <section id="v-cal" class="hide"></section>
+
+  <!-- GIST -->
+  <section id="v-gist" class="hide"></section>
+
+  <!-- MISTAKES -->
+  <section id="v-mistakes" class="hide">
+    <div class="card">
+      <h2>Revise my mistakes</h2>
+      <p class="stat" id="mcount"></p>
+      <button class="btn" id="mstart">Practise these again</button>
+      <button class="btn sec" id="mclear">Clear list</button>
+    </div>
+  </section>
+
+  <!-- ADD -->
+  <section id="v-add" class="hide">
+    <div class="card">
+      <h2>Add a question</h2>
+      <p class="note">This is the admin form. In the full app it saves to your database; here it saves only in this browser.</p>
+      <label class="f">Question</label><textarea id="a-q"></textarea>
+      <label class="f">Options (one per line, 4 lines)</label><textarea id="a-o" style="min-height:110px"></textarea>
+      <label class="f">Correct option number (1–4)</label><input id="a-c" type="number" min="1" max="4">
+      <label class="f">Explanation</label><textarea id="a-e"></textarea>
+      <div class="row">
+        <div><label class="f">Topic</label><select id="a-t"></select></div>
+        <div><label class="f">Scale</label><select id="a-s"><option>I</option><option>II</option><option>III</option><option>IV</option></select></div>
+      </div>
+      <label class="f">Source (circular / press release no.)</label><input id="a-src">
+      <button class="btn" id="a-save">Save question</button>
+    </div>
+  </section>
+</main>
+<button id="fab" type="button" aria-label="Ask Mentor – open chat">
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9 10h6M9 14h4"/></svg>
+  <span>Ask Mentor</span>
+</button>
+<div id="chatwrap" class="hide" role="dialog" aria-modal="true" aria-labelledby="chatttl">
+  <div id="chatpanel">
+    <div id="chathead">
+      <div><b id="chatttl">Ask Mentor</b><div style="font-size:12px;opacity:.8">Banking awareness · RBI · exams · interviews</div></div>
+      <button id="chatclose" type="button" aria-label="Close chat">✕</button>
+    </div>
+    <div id="chatbody">
+      <p class="stat" id="chatintro" style="margin-bottom:10px">Type your question, then pick your AI app. Your question goes with exam-mentor instructions.</p>
+      <div id="chatlog"></div>
+      <div class="chips" id="sugg" style="margin:4px 0 6px"></div>
+    </div>
+    <form id="chatform">
+      <textarea id="chatin" placeholder="Type your question…" aria-label="Your question"></textarea>
+      <button class="btn" id="chatsend" aria-label="Ask here">Ask here</button>
+    </form>
+    <div id="aiapps">
+      <div class="aih">Or ask in your AI app</div>
+      <div class="aig">
+        <a class="aib" data-ai="chatgpt" href="https://chatgpt.com/" target="_blank" rel="noopener"><i style="background:#10a37f">G</i>ChatGPT</a>
+        <a class="aib" data-ai="gemini" href="https://gemini.google.com/app" target="_blank" rel="noopener"><i style="background:#4b6ef5">✦</i>Gemini</a>
+        <a class="aib" data-ai="claude" href="https://claude.ai/new" target="_blank" rel="noopener"><i style="background:#d97757">C</i>Claude</a>
+        <a class="aib" data-ai="perplexity" href="https://www.perplexity.ai/" target="_blank" rel="noopener"><i style="background:#1f8a8a">P</i>Perplexity</a>
+        <a class="aib" data-ai="copilot" href="https://copilot.microsoft.com/" target="_blank" rel="noopener"><i style="background:#2b6cb0">Co</i>Copilot</a>
+        <button class="aib" type="button" id="aicopy"><i style="background:#667085">⧉</i>Copy</button>
+      </div>
+    </div>
+    <p class="note" id="chatnote" style="padding:0 14px 10px;margin:0">Opens the app if it's installed, otherwise its website. Your question goes with exam context. AI answers may contain errors – check official sources.</p>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const ALL_EX=["SBI CBO","SBI SCO / Lateral","IBPS CRP-SPL","Bank of Baroda","Union Bank (UBRP)","PNB SO / LBO","Canara Bank SO","Bank of India","Indian Bank SO","Central Bank of India","Punjab & Sind Bank","Bank of Maharashtra","RBI Lateral"];
+const SENIOR=ALL_EX.filter(x=>x!=="SBI CBO");
+// m = months (1–12) of the typical window; null where the window is unclear
+const CAL=[
+["State Bank of India","SCO & lateral hire","Several times a year","Year-round (bigger drives Q3–Q4)",[1,2,3,4,5,6,7,8,9,10,11,12],"II–VI","https://sbi.bank.in/web/careers/current-openings"],
+["State Bank of India","Circle Based Officers (CBO)","Every 1–1.5 years","Jan–Feb",[1,2],"I (2+ yrs exp.)","https://sbi.bank.in/web/careers/current-openings"],
+["IBPS","CRP Specialist Officers","Every year","Notice in July; exams Aug–Nov",[7,8,9,10,11],"I","https://www.ibps.in"],
+["Bank of Baroda","SO / Wealth & Corporate Credit","Every year, 2–3 phases","Feb–Mar and Aug–Oct",[2,3,8,9,10],"II–V","https://www.bankofbaroda.bank.in"],
+["Union Bank of India","Union Bank Recruitment Project","Every year","Apr–Aug",[4,5,6,7,8],"II–V","https://www.unionbankofindia.co.in"],
+["Punjab National Bank","SO and Local Bank Officers (LBO)","Every 1–2 years","SO: Q1–Q2 · LBO: Q3–Q4",null,"I–IV","https://pnb.bank.in/Recruitments.aspx"],
+["Canara Bank","Specialist Officers","Every 1–2 years","May–Aug",[5,6,7,8],"I–IV","https://canarabank.com"],
+["Bank of India","Officers in various streams / Credit","Every 1–1.5 years","Feb–May",[2,3,4,5],"I–IV","https://bankofindia.bank.in"],
+["Indian Bank","Specialist Officers","Every 1–2 years","Apr–May",[4,5],"I–IV","https://www.indianbank.in"],
+["Central Bank of India","SO, Forex & Credit Officers","Every 1–2 years","Jan–Apr",[1,2,3,4],"I–IV","https://www.centralbankofindia.co.in"],
+["Punjab & Sind Bank","Specialist / Lateral Officers","Every 1–2 years","Q2–Q4",null,"I–IV","https://punjabandsindbank.co.in"],
+["Reserve Bank of India","Lateral recruitment of experts","Every 1–2 years","Dec–Jan",[12,1],"Contract / regular","https://www.rbi.org.in"],
+["Bank of Maharashtra","Generalist / Specialist Officers","Not in your list","Check official site",null,"II–IV","https://bankofmaharashtra.in"]
+];
+const Q=[
+// ---- Monetary policy: October 2026 review ----
+{q:"In the MPC meeting of October 5–7, 2026, the policy repo rate was changed to:",o:["5.25%","5.50%","5.75%","6.00%"],a:1,t:"Monetary Policy",s:["I","II","III"],x:ALL_EX,e:"The MPC unanimously raised the repo rate by 25 bps, from 5.25% to 5.50%.",src:"RBI, MPC Resolution, Oct 5–7, 2026"},
+{q:"After the October 2026 policy, the MPC changed its stance to:",o:["Neutral","Accommodative","Calibrated tightening","Withdrawal of accommodation"],a:2,t:"Monetary Policy",s:["I","II","III"],x:ALL_EX,e:"The stance moved from neutral to 'calibrated tightening'.",src:"RBI, MPC Resolution, Oct 5–7, 2026"},
+{q:"Following the October 2026 policy, the Standing Deposit Facility (SDF) rate stands at:",o:["5.00%","5.25%","5.50%","5.75%"],a:1,t:"Monetary Policy",s:["I","II"],x:ALL_EX,e:"SDF = repo − 25 bps = 5.25%. MSF and Bank Rate = repo + 25 bps = 5.75%.",src:"RBI Governor's Statement, Oct 7, 2026"},
+{q:"Which rate is equal to the Bank Rate after the October 2026 policy?",o:["Repo rate","SDF rate","MSF rate","Reverse repo rate"],a:2,t:"Monetary Policy",s:["I","II"],x:ALL_EX,e:"The Bank Rate is aligned with the MSF rate; both are 5.75%.",src:"RBI Governor's Statement, Oct 7, 2026"},
+{q:"The October 2026 policy set a target of December 31, 2026 for:",o:["Launch of e-rupee for all banks","Interoperability among NBFC Account Aggregators","Merger of RRBs","New KYC Master Direction"],a:1,t:"Monetary Policy",s:["II","III","IV"],x:ALL_EX,e:"RBI announced interoperability among Account Aggregators and inclusion of bank deposit information in consolidated account statements, targeted by Dec 31, 2026.",src:"RBI Statement on Developmental & Regulatory Policies, Oct 2026"},
+// ---- MPC framework ----
+{q:"The Monetary Policy Committee is constituted under which section of the RBI Act, 1934?",o:["Section 17","Section 42","Section 45ZB","Section 45ZL"],a:2,t:"Monetary Policy",s:["I","II"],x:ALL_EX,e:"Section 45ZB constitutes the MPC. Section 45ZL deals with publication of its minutes.",src:"RBI Act, 1934"},
+{q:"What is the quorum for an MPC meeting?",o:["3 members","4 members, including the Governor or, in his absence, the Deputy Governor in charge of monetary policy","5 members","All 6 members"],a:1,t:"Monetary Policy",s:["II","III"],x:ALL_EX,e:"Four members form the quorum, one of whom must be the Governor or (in his absence) the Deputy Governor who is a member.",src:"RBI Act, 1934, Sec 45ZI"},
+{q:"In case of a tie in an MPC vote, the decision is made by:",o:["Finance Minister","Majority of external members","Governor's casting vote","Deferral to next meeting"],a:2,t:"Monetary Policy",s:["I","II"],x:ALL_EX,e:"The Governor has a second or casting vote in case of equality of votes.",src:"RBI Act, 1934, Sec 45ZI"},
+{q:"MPC minutes are published on which day after the meeting?",o:["7th day","10th day","14th day","30th day"],a:2,t:"Monetary Policy",s:["II","III"],x:ALL_EX,e:"Under Section 45ZL, minutes are published on the 14th day after the meeting.",src:"RBI Act, 1934, Sec 45ZL"},
+// ---- Credit, NPA, recovery ----
+{q:"A term loan account becomes an NPA when interest/instalment remains overdue for more than:",o:["30 days","60 days","90 days","180 days"],a:2,t:"Credit & NPA",s:["I","II"],x:ALL_EX,e:"Under IRACP norms, an account is NPA when dues are overdue for more than 90 days.",src:"RBI Master Circular – IRACP"},
+{q:"An account whose principal or interest is overdue for 31–60 days is classified as:",o:["SMA-0","SMA-1","SMA-2","Sub-standard"],a:1,t:"Credit & NPA",s:["I","II","III"],x:ALL_EX,e:"SMA-0: up to 30 days, SMA-1: 31–60 days, SMA-2: 61–90 days.",src:"RBI Prudential Framework, June 7, 2019"},
+{q:"Under Section 13(2) of the SARFAESI Act, the borrower must be given a demand notice to discharge liabilities within:",o:["30 days","45 days","60 days","90 days"],a:2,t:"Credit & NPA",s:["II","III","IV"],x:ALL_EX,e:"The secured creditor issues a 60-day demand notice before taking measures under Section 13(4).",src:"SARFAESI Act, 2002"},
+{q:"Case (Scale III): A secured MSME account in your branch has turned NPA and the borrower is not responding. What is the first legal step under SARFAESI?",o:["Take symbolic possession immediately","Issue demand notice under Section 13(2)","File a suit in civil court","Declare the borrower a wilful defaulter"],a:1,t:"Credit & NPA",s:["III","IV"],x:SENIOR,e:"Possession under 13(4) can follow only after the 60-day notice under 13(2) expires and the borrower's objections are replied to under 13(3A).",src:"SARFAESI Act, 2002"},
+{q:"Under RBI's 2024 directions on wilful defaulters, the outstanding threshold for examining wilful default is:",o:["₹10 lakh and above","₹25 lakh and above","₹1 crore and above","₹5 crore and above"],a:1,t:"Credit & NPA",s:["III","IV"],x:SENIOR,e:"The Master Direction on Treatment of Wilful Defaulters and Large Defaulters, 2024 applies to accounts with outstanding of ₹25 lakh and above.",src:"RBI Master Direction, July 30, 2024"},
+{q:"Under the IBC, the corporate insolvency resolution process, including litigation time, must be completed within:",o:["180 days","270 days","330 days","365 days"],a:2,t:"Credit & NPA",s:["II","III","IV"],x:ALL_EX,e:"CIRP is 180 days, extendable by 90 days, with an outer limit of 330 days including litigation.",src:"IBC, 2016, Sec 12"},
+{q:"Under RBI's 2023 framework for compromise settlements, the minimum cooling period before fresh credit to a non-farm borrower is:",o:["6 months","12 months","24 months","No cooling period"],a:1,t:"Credit & NPA",s:["III","IV"],x:SENIOR,e:"Non-farm exposures have a minimum 12-month cooling period; boards may set longer periods.",src:"RBI Framework for Compromise Settlements, June 8, 2023"},
+// ---- Regulation & compliance ----
+{q:"Domestic scheduled commercial banks must lend what share of ANBC (or CEOBE, whichever is higher) to the priority sector?",o:["18%","32%","40%","75%"],a:2,t:"Regulation",s:["I","II","III"],x:ALL_EX,e:"Overall PSL target is 40% for domestic SCBs and foreign banks with 20+ branches.",src:"RBI Master Directions – Priority Sector Lending"},
+{q:"In India, the minimum total capital requirement under Basel III, including the Capital Conservation Buffer, is:",o:["9%","10.5%","11.5%","12%"],a:2,t:"Regulation",s:["II","III","IV"],x:ALL_EX,e:"Minimum CRAR of 9% plus CCB of 2.5% = 11.5%.",src:"RBI Master Circular – Basel III Capital Regulations"},
+{q:"Periodic KYC updation for high-risk customers must be done at least once every:",o:["1 year","2 years","8 years","10 years"],a:1,t:"Regulation",s:["I","II"],x:ALL_EX,e:"High risk: every 2 years; medium: 8 years; low: 10 years.",src:"RBI Master Direction – KYC, 2016 (as updated)"},
+{q:"Under RBI's 2024 Master Directions on Fraud Risk Management, before classifying an account as fraud, banks must:",o:["Obtain approval of the RBI","Give the borrower a show-cause notice and opportunity to reply","Get a police FIR registered first","Wait for a forensic audit for 2 years"],a:1,t:"Regulation",s:["III","IV"],x:SENIOR,e:"Following the Supreme Court ruling of March 2023, principles of natural justice apply: show-cause notice and at least 21 days to reply.",src:"RBI Master Directions on Fraud Risk Management, July 15, 2024"},
+// ---- Customer service & operations ----
+{q:"The RBI Integrated Ombudsman Scheme was launched on:",o:["July 1, 2019","November 12, 2021","April 1, 2022","January 1, 2023"],a:1,t:"Customer Service",s:["I","II"],x:ALL_EX,e:"RB-IOS, 2021 integrated three earlier ombudsman schemes under 'One Nation One Ombudsman'.",src:"RBI Press Release, Nov 12, 2021"},
+{q:"Under the Positive Pay System, banks may make it mandatory for cheques of:",o:["₹50,000 and above","₹1 lakh and above","₹5 lakh and above","₹10 lakh and above"],a:2,t:"Customer Service",s:["I","II"],x:ALL_EX,e:"Banks enable Positive Pay for cheques of ₹50,000 and above and may make it mandatory for ₹5 lakh and above.",src:"RBI Circular, Sept 25, 2020"},
+{q:"A cheque, draft or pay order is valid for:",o:["1 month","3 months","6 months","12 months"],a:1,t:"Customer Service",s:["I"],x:ALL_EX,e:"Validity was reduced from 6 to 3 months from April 1, 2012.",src:"RBI Notification, Nov 4, 2011"}
+];
+const GIST=[
+{title:"MPC Review – October 5–7, 2026 (63rd meeting)",rows:[["Repo rate","5.50% (+25 bps)"],["Stance","Neutral → Calibrated tightening"],["SDF","5.25%"],["MSF / Bank Rate","5.75%"],["Vote on rate","Unanimous (6–0)"],["Core inflation 2026-27","4.4% (projected)"]],pts:["Hike driven by higher food and energy prices, geopolitical tension and volatile crude.","Global central banks turning hawkish; the US Fed hiked 25 bps in September.","Account Aggregator interoperability and deposit data in consolidated statements, targeted by Dec 31, 2026.","A Technical Consultative Committee for Financial Markets to be constituted.","Previous meeting had held the repo rate at 5.25%."],src:[["RBI – MPC Resolution","https://rbi.org.in/Scripts/BS_ViewBulletin.aspx?Id=24511"],["RBI – Minutes, Oct 21, 2026","https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63839"]]},
+{title:"Circular card: SMA & NPA classification",rows:[["SMA-0","Up to 30 days overdue"],["SMA-1","31–60 days"],["SMA-2","61–90 days"],["NPA","More than 90 days"]],pts:["Classification is done borrower-wise, not facility-wise.","CC/OD: 'out of order' if outstanding stays above limit/DP continuously for 90 days."],src:[["RBI – Prudential Framework (June 7, 2019)","https://www.rbi.org.in"]]},
+{title:"Circular card: Wilful Defaulters (2024)",rows:[["Issued","July 30, 2024"],["Threshold","Outstanding ₹25 lakh+"],["Review","Identification & Review Committees"]],pts:["Borrower gets a show-cause notice and personal hearing opportunity.","Wilful defaulters are barred from additional credit and restructuring."],src:[["RBI – Master Direction","https://www.rbi.org.in"]]}
+];
+const TOPICS=[...new Set(Q.map(q=>q.t))];
+let st={exam:"All",scale:"All",topic:"All",mode:"practice"};
+let quiz=null,tm=null;
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+// custom questions
+store.get("bp_custom",[]).forEach(c=>Q.push(c));
+Q.forEach((q,i)=>q.id=q.id||("q"+i));
+
+function chips(el,arr,key){
+  $(el).innerHTML=["All",...arr].map(v=>`<button class="chip ${st[key]===v?'on':''}" data-v="${v}">${v}</button>`).join("");
+  $(el).onclick=e=>{const b=e.target.closest(".chip");if(!b)return;st[key]=b.dataset.v;chips(el,arr,key);upd();};
+}
+function pool(){return Q.filter(q=>(st.exam==="All"||q.x.includes(st.exam))&&(st.scale==="All"||q.s.includes(st.scale))&&(st.topic==="All"||q.t===st.topic));}
+function upd(){const n=pool().length;$("count").textContent=n+" questions match"+(st.mode==="mock"?` · ${Math.ceil(n*36/60)} min`:"");$("start").disabled=!n;}
+$("f-exam").innerHTML=["All",...ALL_EX].map(v=>`<option>${v}</option>`).join("");$("f-exam").onchange=e=>{st.exam=e.target.value;upd();};chips("f-scale",["I","II","III","IV"],"scale");chips("f-topic",TOPICS,"topic");
+$("f-mode").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;st.mode=b.dataset.m;[...$("f-mode").children].forEach(c=>c.classList.toggle("on",c===b));upd();};
+upd();
+
+function show(v){["home","quiz","result","jobs","cal","gist","mistakes","add"].forEach(x=>$("v-"+x).classList.toggle("hide",x!==v));
+  [...$("nav").children].forEach(b=>b.classList.toggle("on",b.dataset.v===v||(v==="quiz"||v==="result")&&b.dataset.v==="home"));window.scrollTo(0,0);}
+$("nav").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(quiz&&!quiz.done&&!confirmLeave())return;stop();
+  const v=b.dataset.v;if(v==="gist")renderGist();if(v==="cal")renderCal();if(v==="jobs")renderJobs();if(v==="mistakes")renderMist();show(v);};
+function confirmLeave(){quiz=null;return true}
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function startQuiz(list,mode){
+  quiz={qs:shuffle(list),i:0,ans:{},mode,done:false,left:list.length*36};
+  show("quiz");renderQ();
+  if(mode==="mock"){tm=setInterval(()=>{quiz.left--;tick();if(quiz.left<=0)finish();},1000);}
+  tick();
+}
+function stop(){clearInterval(tm);tm=null;}
+function tick(){const t=$("timer");if(quiz.mode!=="mock"){t.textContent="Practice";t.classList.remove("low");return;}
+  const m=Math.floor(quiz.left/60),s=quiz.left%60;t.textContent=`⏱ ${m}:${String(s).padStart(2,"0")}`;t.classList.toggle("low",quiz.left<60);}
+function renderQ(){
+  const q=quiz.qs[quiz.i],n=quiz.qs.length,a=quiz.ans[q.id];
+  $("qnum").textContent=`Question ${quiz.i+1} of ${n}`;
+  $("prog").style.width=((quiz.i+1)/n*100)+"%";
+  $("qtags").innerHTML=`<span class="tag">${q.t}</span><span class="tag">Scale ${q.s.join("/")}</span>`;
+  $("qtext").textContent=q.q;
+  const reveal=quiz.mode==="practice"&&a!==undefined;
+  $("opts").innerHTML=q.o.map((o,k)=>{let c="opt";if(reveal){if(k===q.a)c+=" ok";else if(k===a)c+=" bad";}else if(k===a)c+=" sel";
+    return `<button class="${c}" data-k="${k}">${String.fromCharCode(65+k)}. ${o}</button>`}).join("");
+  $("expbox").innerHTML=reveal?`<div class="exp"><b>${a===q.a?"Correct.":"Not quite."}</b> ${q.e}<div class="src">Source: ${q.src}</div></div>`:"";
+  $("prev").disabled=quiz.i===0;
+  $("next").textContent=quiz.i===n-1?"Submit":"Next";
+}
+$("opts").onclick=e=>{const b=e.target.closest(".opt");if(!b)return;const q=quiz.qs[quiz.i];
+  if(quiz.mode==="practice"&&quiz.ans[q.id]!==undefined)return;quiz.ans[q.id]=+b.dataset.k;renderQ();};
+$("prev").onclick=()=>{if(quiz.i>0){quiz.i--;renderQ();}};
+$("next").onclick=()=>{if(quiz.i<quiz.qs.length-1){quiz.i++;renderQ();}else finish();};
+$("start").onclick=()=>startQuiz(pool(),st.mode);
+
+function finish(){
+  stop();quiz.done=true;let c=0,w=0,sk=0;const mis=new Set(store.get("bp_mis",[]));
+  quiz.qs.forEach(q=>{const a=quiz.ans[q.id];if(a===undefined)sk++;else if(a===q.a){c++;mis.delete(q.id);}else{w++;mis.add(q.id);}});
+  store.set("bp_mis",[...mis]);
+  const neg=quiz.mode==="mock"?0.25:0,score=c-w*neg;
+  $("rscore").textContent=`${score % 1 ? score.toFixed(2) : score} / ${quiz.qs.length}`;
+  $("rc").textContent=c;$("rw").textContent=w;$("rs").textContent=sk;
+  $("racc").textContent=(c+w?`Accuracy ${Math.round(c/(c+w)*100)}%`:"No questions attempted")+(neg?" · −0.25 per wrong answer":"");
+  $("review").innerHTML=quiz.qs.map((q,i)=>{const a=quiz.ans[q.id];const r=a===undefined?"Skipped":a===q.a?"Correct":"Wrong";
+    return `<div class="card"><div class="tags"><span class="tag">${i+1}. ${r}</span><span class="tag">${q.t}</span></div><h3>${q.q}</h3>
+    ${a!==undefined&&a!==q.a?`<p class="bad-t" style="font-size:14px">Your answer: ${q.o[a]}</p>`:""}
+    <p class="ok-t" style="font-size:14px;font-weight:600">Answer: ${q.o[q.a]}</p><div class="exp">${q.e}<div class="src">Source: ${q.src}</div></div></div>`}).join("");
+  show("result");
+}
+$("again").onclick=()=>{quiz=null;show("home");};
+
+// ---- Latest jobs (shared database, filled by a scheduled task) ----
+let JOBS=null,jobsMsg="Loading…",jfilter="open",SNAP=false;
+const SNAPSHOT=[{"id": "bob-so-2026-11", "addedAt": "2026-11-22T16:20:00Z", "bank": "Bank of Baroda", "lastDate": "2026-11-24", "link": "https://www.bankofbaroda.bank.in", "note": "Figures from exam-prep sites; confirm on the official Careers page.", "notified": "2026-11-04", "post": "Specialist Officers (various departments)", "scale": "Various", "vacancies": "837 (as reported)"}, {"id": "boi-so-2026-27-02", "addedAt": "2026-11-22T16:30:00Z", "bank": "Bank of India", "examDate": "2026-11-27", "link": "https://bankofindia.bank.in", "post": "Specialist Officers – Project 2026-27/02", "scale": "Specialist", "stage": "Admit card out (18.11.2026) – online exam on 27.11.2026", "stageType": "in-process", "vacancies": "205"}, {"id": "ibps-crp-spl-xvi", "addedAt": "2026-11-22T16:30:00Z", "bank": "IBPS", "examDate": "2026-11-01", "lastDate": "2026-07-26", "link": "https://www.ibps.in", "notified": "2026-06-30", "post": "CRP SPL-XVI Specialist Officers (IT, Agri, Law, HR, Marketing, Rajbhasha)", "resultDate": "2026-10-15", "resultLink": "https://www.ibps.in", "scale": "JMGS-I", "stage": "Prelims result out; Mains held 01.11.2026 – interviews Nov–Dec, final allotment expected Jan 2027", "stageType": "in-process", "vacancies": "about 1,040"}, {"id": "indianbank-ai-cybersecurity-issd-2026-11", "addedAt": "2026-11-22T16:20:49Z", "bank": "Indian Bank", "experience": "3–12 years in InfoSec/BFSI depending on post (as reported)", "lastDate": "2026-12-01", "link": "https://indianbank.bank.in/en/career", "note": "Offline application. Vacancies and last date from exam-prep sites; verify on official site.", "notified": "2026-11-11", "post": "AI-Cybersecurity Specialist Officers for ISSD (contract basis) – VP, AVP, Associate Manager", "scale": "Contract", "vacancies": "5 (as reported)"}, {"id": "indianbank-ai-specialist-2026-11", "addedAt": "2026-11-22T16:20:00Z", "bank": "Indian Bank", "lastDate": "2026-12-01", "link": "https://www.indianbank.in", "note": "Contractual, offline application to Chennai Corporate Office by 01.12.2026 (as reported); verify on official site.", "notified": "2026-11-11", "post": "AI Specialist Officers for AI Cell (contract basis)", "scale": "Contract", "vacancies": "8"}, {"id": "indianbank-it-consultant-2026-11", "addedAt": "2026-11-22T16:20:49Z", "bank": "Indian Bank", "experience": "5 years at GM level in PSBs/FIs or professor at IIT/NIT (as reported)", "lastDate": "2026-12-01", "link": "https://indianbank.bank.in/en/career", "note": "Offline application. Last date from exam-prep site; verify on official site.", "notified": "2026-11-11", "post": "Consultant for Information Technology Department (contract basis)", "scale": "Contract"}, {"id": "indianbank-so-2026", "addedAt": "2026-11-22T16:30:00Z", "bank": "Indian Bank", "examDate": "2026-05-31", "lastDate": "2026-04-28", "link": "https://www.indianbank.in", "notified": "2026-04-08", "post": "Specialist Officers – 2026", "resultDate": "2026-10-29", "resultLink": "https://www.indianbank.in", "scale": "JMGS-I to SMGS-IV", "stage": "Final result – provisional selection list published (exam 31.05.2026)", "stageType": "final", "vacancies": "354 (as reported)"}, {"id": "pnb-lbo-final-2026-06", "addedAt": "2026-11-22T16:30:00Z", "bank": "Punjab National Bank", "link": "https://pnb.bank.in/Recruitments.aspx", "note": "Final merit list published; joining instructions on PNB site.", "post": "Local Bank Officers – previous cycle (exam held 04.01.2026)", "resultDate": "2026-06-23", "resultLink": "https://pnb.bank.in/Recruitments.aspx", "scale": "JMGS-I", "stage": "Final result declared", "stageType": "final"}, {"id": "pnb-lbo-hrp-2026-27", "addedAt": "2026-11-22T16:30:00Z", "bank": "Punjab National Bank", "examDate": "2026-09-06", "lastDate": "2026-08-16", "link": "https://pnb.bank.in/Recruitments.aspx", "note": "Exam held 06.09.2026. Last date was extended from 09.08 to 16.08.2026.", "notified": "2026-07-20", "post": "Local Bank Officers (LBO) under HRP 2026-27", "resultDate": "2026-11-11", "resultLink": "https://pnb.bank.in/Recruitments.aspx", "scale": "JMGS-I", "stage": "Written exam result out (594 qualified) – local language test next", "stageType": "in-process", "vacancies": "545"}, {"id": "pnb-so-hrp-2026-27", "addedAt": "2026-11-22T16:30:00Z", "bank": "Punjab National Bank", "link": "https://pnb.bank.in/Recruitments.aspx", "notified": "2026-04-20", "post": "30 Specialist Officers under HRP 2026-27", "resultDate": "2026-11-02", "resultLink": "https://pnb.bank.in/Recruitments.aspx", "scale": "Specialist", "stage": "Selection done – joining schedule (second and final opportunity) published", "stageType": "final", "vacancies": "30"}, {"id": "sbi-cbo-2025-26-18", "addedAt": "2026-11-22T16:30:00Z", "bank": "State Bank of India", "examDate": "2026-03-14", "link": "https://sbi.bank.in/web/careers/current-openings", "note": "Final marks also released on SBI Careers.", "post": "Circle Based Officers (Advt. CRPD/CBO/2025-26/18)", "resultDate": "2026-07-24", "resultLink": "https://sbi.bank.in/web/careers/current-openings", "scale": "JMGS-I", "stage": "Final result declared (exam 14.03.2026, interviews July 2026)", "stageType": "final", "vacancies": "about 2,273 (incl. backlog, as reported)"}, {"id": "sbi-crpd-sco-2026-27-26-2026-11", "addedAt": "2026-11-22T16:20:49Z", "bank": "State Bank of India", "lastDate": "2026-11-23", "link": "https://sbi.bank.in/web/careers/current-openings", "note": "Advt. No. CRPD/SCO/2026-27/26. Apply online 02.11.2026 to 23.11.2026.", "notified": "2026-11-02", "post": "Specialist Cadre Officers (regular) – Chief Manager (Product & Research – Forex & Rupee Derivatives) and Manager (Product & Research Analyst)", "scale": "Specialist cadre"}, {"id": "sbi-crpd-sco-2026-27-31", "addedAt": "2026-11-22T16:20:00Z", "bank": "State Bank of India", "experience": "Domain experience in Data Science / AI / IT (see notification)", "lastDate": "2026-12-10", "link": "https://sbi.bank.in/web/careers/current-openings", "note": "Advt. No. CRPD/SCO/2026-27/31. Apply online 20.11.2026 to 10.12.2026.", "notified": "2026-11-20", "post": "Specialist Cadre Officers (regular) – Deputy Manager, Manager, Chief Manager in Data Science, AI and IT", "scale": "MMGS-II to SMGS-IV", "vacancies": "20"}, {"id": "sbi-crpd-sco-2026-27-36-2026-11", "addedAt": "2026-11-22T16:20:49Z", "bank": "State Bank of India", "lastDate": "2026-12-03", "link": "https://sbi.bank.in/web/careers/current-openings", "note": "Advt. No. CRPD/SCO/2026-27/36. Apply online 19.11.2026 to 03.12.2026 (notified date = apply start).", "notified": "2026-11-19", "post": "General Manager & Head, CSTRA (Cybersecurity & Tech Risk Assurance) – fixed-term", "scale": "Fixed-term"}, {"id": "sbi-sco-risk-specialist-2026-11", "addedAt": "2026-11-22T16:20:00Z", "bank": "State Bank of India", "lastDate": "2026-11-23", "link": "https://sbi.bank.in/web/careers/current-openings", "note": "Advt. No. CRPD/SCO/2026-27/27. Apply online 02.11.2026 to 23.11.2026.", "notified": "2026-11-02", "post": "Specialist Cadre Officer (regular) – Risk Specialist", "scale": "Specialist cadre"}, {"id": "sbi-sco-security-fire-2026-11", "addedAt": "2026-11-22T16:20:00Z", "bank": "State Bank of India", "lastDate": "2026-11-25", "link": "https://sbi.bank.in/web/careers/current-openings", "note": "Advt. Nos. CRPD/SCO/2026-27/28 and /29. Apply online 04.11.2026 to 25.11.2026.", "notified": "2026-11-04", "post": "Specialist Cadre Officers (regular) – Manager (Security) / Deputy Manager, and Assistant Manager – Engineer (Fire)", "scale": "JMGS-I to MMGS-III"}, {"id": "ubi-ubrp-2026-27", "addedAt": "2026-11-22T16:30:00Z", "bank": "Union Bank of India", "examDate": "2026-09-06", "lastDate": "2026-08-10", "link": "https://www.unionbankofindia.bank.in/english/aboutus-careers.aspx", "notified": "2026-07-20", "post": "Union Bank Recruitment Project 2026-27 – Generalist & Specialist Officers (Manager to DGM)", "scale": "MMGS-II to TEGS-VI", "stage": "Online exam held 06.09.2026 – interview stage next; check bank site for result", "stageType": "in-process", "vacancies": "395"}];
+const SNAP_DATE="2026-11-22T17:00:00Z";
+const DATA_URL="https://raw.githubusercontent.com/cockroachbankersparty01-gif/lateral-banker-prep/main/data/jobs.json";
+let JOBS_UPDATED=SNAP_DATE,JOBS_LIVE=false,JOBS_FETCHING=false;
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safeUrl=u=>/^https:\/\//i.test(u||"")?u:"";
+const today=()=>new Date().toISOString().slice(0,10);
+(async()=>{
+  if(typeof claude==="undefined"||!claude.use){SNAP=true;loadJobsLive();return;}
+  let to=setTimeout(()=>{jobsMsg="Can't reach the jobs list right now. Try again later.";renderJobs();},10000);
+  try{
+    const db=await claude.use("db");
+    if(!db){clearTimeout(to);jobsMsg="Sign in to claude.ai to see the live jobs list.";renderJobs();return;}
+    db.collection("jobs").limit(500).onSnapshot(snap=>{
+      if(!snap.metadata.fromCache)clearTimeout(to);
+      JOBS=snap.docs.map(d=>({id:d.id,...d.data()}));renderJobs();if(!$("v-cal").classList.contains("hide"))renderCal();
+    },e=>{clearTimeout(to);jobsMsg="The jobs list couldn't load.";renderJobs();});
+  }catch(e){clearTimeout(to);jobsMsg="The jobs list isn't available in this view.";renderJobs();}
+})();
+$("jf").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;jfilter=b.dataset.j;[...$("jf").children].forEach(c=>c.classList.toggle("on",c===b));renderJobs();};
+function jobState(j,t){
+  if(j.stageType==="result"||j.stageType==="final")return "res";
+  if(j.stageType==="in-process")return "proc";
+  if(j.lastDate&&j.lastDate<t)return "proc";
+  return "open";
+}
+function renderJobs(){
+  const box=$("jobs");if(!box)return;
+  if(!JOBS){box.innerHTML=`<div class="card stat">${esc(jobsMsg)}</div>`;return;}
+  const t=today(),wk=new Date(Date.now()-7*864e5).toISOString(),six=new Date(Date.now()-183*864e5).toISOString().slice(0,10);
+  const key=j=>[j.resultDate||"",j.notified||""].sort().pop();
+  let list=JOBS.map(j=>({...j,_s:jobState(j,t)}))
+    .filter(j=>jfilter==="all"||j._s===jfilter)
+    .filter(j=>j._s==="open"||key(j)>=six)
+    .sort((a,b)=>key(b).localeCompare(key(a)));
+  const empty={open:"No open notifications right now.",proc:"No recruitments in process right now.",res:"No results in the last 6 months yet.",all:"No entries yet. The next automatic update will add them."};
+  if(!list.length){box.innerHTML=`<div class="card stat">${empty[jfilter]}</div>`;return;}
+  const badge={open:['#e8f6ef','#1a8f5a','Open'],proc:['#eef2fa','#1f3b73','In process'],res:['#f3ecfb','#6b3fa0','Result out']};
+  box.innerHTML=list.map(j=>{const isNew=(j.addedAt||"")>=wk,u=safeUrl(j.link),ru=safeUrl(j.resultLink),bd=badge[j._s];
+    let stage=j.stage||(j._s==="open"?"Applications open":j._s==="proc"?"Applications closed – exam/result awaited":"");
+    return `<div class="card"><div class="tags">${isNew?'<span class="tag" style="background:#fff1e5;color:#c25e17">New</span>':""}
+    <span class="tag" style="background:${bd[0]};color:${bd[1]}">${bd[2]}</span>
+    ${j.scale?`<span class="tag">${esc(j.scale)}</span>`:""}</div>
+    <h3>${esc(j.bank)}</h3><p style="font-size:14px;font-weight:600">${esc(j.post)}</p>
+    <dl style="display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px;margin-top:6px">
+    ${j.vacancies?`<dt class="stat">Vacancies</dt><dd>${esc(j.vacancies)}</dd>`:""}
+    ${j.experience?`<dt class="stat">Experience</dt><dd>${esc(j.experience)}</dd>`:""}
+    ${j.notified?`<dt class="stat">Notified</dt><dd>${esc(j.notified)}</dd>`:""}
+    ${j.lastDate?`<dt class="stat">Last date</dt><dd>${esc(j.lastDate)}</dd>`:""}
+    ${stage?`<dt class="stat">Result / Status</dt><dd style="color:${bd[1]}">${esc(stage)}${j.resultDate?` <span class="stat">(${esc(j.resultDate)})</span>`:""}</dd>`:""}</dl>
+    ${j.note?`<p class="note">${esc(j.note)}</p>`:""}
+    <div class="src">${u?`<a href="${esc(u)}" target="_blank" rel="noopener">Official notification</a>`:""}${u&&ru?" · ":""}${ru?`<a href="${esc(ru)}" target="_blank" rel="noopener">Result page</a>`:""}</div></div>`}).join("")
+  +`<p class="note" style="padding:0 4px 10px">Details are collected automatically from public sources. Always verify on the bank's official site.</p>`;
+}
+
+// ---- Ask Mentor chatbot ----
+let CHAT=[],chatBusy=false,chatCtl=null;
+function openChat(){$("chatwrap").classList.remove("hide");$("fab").classList.add("hide");document.body.style.overflow="hidden";drawChat();setTimeout(()=>$("chatin").focus(),50);}
+function closeChat(){$("chatwrap").classList.add("hide");$("fab").classList.remove("hide");document.body.style.overflow="";}
+$("fab").onclick=openChat;$("chatclose").onclick=closeChat;
+$("chatwrap").onclick=e=>{if(e.target.id==="chatwrap")closeChat();};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("chatwrap").classList.contains("hide"))closeChat();});
+const SUGG=["Explain the October 2026 MPC decision","Difference between SDF and MSF?","What is asked in SBI CBO interview?","Which openings are open now?","SARFAESI steps for a Scale III branch head","Make 5 MCQs on KYC"];
+$("sugg").innerHTML=SUGG.map(q=>`<button class="chip" type="button">${esc(q)}</button>`).join("");
+$("sugg").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;$("chatin").value=b.textContent;$("chatin").dispatchEvent(new Event("input"));$("chatin").focus();};
+$("chatform").onsubmit=e=>{e.preventDefault();sendChat();};
+$("chatin").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}};
+function md(t){
+  let h=esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^#{1,4}\s*(.+)$/gm,"<b>$1</b>");
+  const lines=h.split("\n");let out="",inL=false;
+  for(const l of lines){const m=l.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)/);
+    if(m){if(!inL){out+="<ul>";inL=true;}out+=`<li>${m[1]}</li>`;}
+    else{if(inL){out+="</ul>";inL=false;}if(l.trim())out+=`<p>${l}</p>`;}}
+  return out+(inL?"</ul>":"");
+}
+function drawChat(){
+  $("chatlog").innerHTML=CHAT.map(m=>`<div class="msg ${m.role==="user"?"u":"b"}${m.err?" err":""}">${m.role==="user"?esc(m.content):md(m.content||"Thinking…")}</div>`).join("");
+  $("sugg").style.display=CHAT.length?"none":"flex";$("chatintro").style.display=CHAT.length?"none":"block";
+  const cb=$("chatbody");cb.scrollTop=cb.scrollHeight;
+}
+const SYS=`You are "Lateral Banker Prep Mentor", a friendly, precise tutor for Indian bank lateral-entry and officer exams: SBI CBO/SCO, Bank of Maharashtra Generalist, PNB LBO, IBPS SO, BoB, Union Bank, Canara, BOI, Indian Bank, Central Bank, Punjab & Sind Bank and RBI lateral recruitment, Scales I–IV.
+Help with: banking awareness, RBI monetary policy and circulars, PSB schemes, credit/NPA/SARFAESI/IBC, KYC/AML, Basel, priority sector, digital banking, exam pattern, eligibility, interview and case-study preparation (Scale III/IV answers should be from a branch-head or manager's perspective).
+Rules: Answer in the language the candidate writes in (English or Hindi/Hinglish). Be concise and mobile-friendly: short paragraphs or bullets, under ~200 words unless asked for more. Use the tools to look up this app's question bank, policy gist and the live openings/results list, and prefer them for current rates, dates and openings. If something may have changed after your knowledge or isn't in the tools, say so and point to rbi.org.in or the bank's official careers page. Never invent rates, dates, vacancy counts or circular numbers. When asked for practice questions, give MCQs with answers and one-line explanations. Stay on banking, finance, exams and careers; politely steer other topics back.`;
+const TOOLS=[
+ {name:"get_policy_gist",description:"Latest RBI monetary policy gist and key circular summary cards stored in the app.",inputSchema:{type:"object",properties:{}},execute:()=>GIST},
+ {name:"search_question_bank",description:"Search the app's practice questions (with answers, explanations and sources) by keyword.",inputSchema:{type:"object",properties:{query:{type:"string"}},required:["query"]},
+  execute:({query})=>{const w=String(query||"").toLowerCase().split(/\s+/).filter(x=>x.length>2);
+   return Q.filter(q=>w.some(x=>(q.q+" "+q.e+" "+q.t).toLowerCase().includes(x))).slice(0,8).map(q=>({q:q.q,answer:q.o[q.a],explanation:q.e,source:q.src,topic:q.t}));}},
+ {name:"get_openings_and_results",description:"Live list of PSB/IBPS/RBI officer openings plus recruitment status and results from the last 6 months.",inputSchema:{type:"object",properties:{}},
+  execute:()=>JOBS?JOBS.slice(0,60).map(j=>({bank:j.bank,post:j.post,scale:j.scale,vacancies:j.vacancies,notified:j.notified,lastDate:j.lastDate,status:j.stage,statusType:j.stageType,resultDate:j.resultDate,link:j.link})):"List not loaded in this view."},
+ {name:"get_exam_calendar",description:"Typical recruitment windows and frequency for each PSB drive.",inputSchema:{type:"object",properties:{}},execute:()=>CAL.map(r=>({bank:r[0],drive:r[1],frequency:r[2],window:r[3],scale:r[5]}))}
+];
+async function sendChat(){
+  const text=$("chatin").value.trim();if(!text||chatBusy)return;
+  let sample=null;try{sample=await claude.use("sample");}catch(e){}
+  if(!sample){$("chatnote").textContent="The chatbot isn't available in this view. Open the app in Claude while signed in.";return;}
+  $("chatin").value="";CHAT.push({role:"user",content:text});const bot={role:"assistant",content:""};CHAT.push(bot);drawChat();
+  chatBusy=true;$("chatsend").disabled=true;chatCtl=new AbortController();
+  const hist=CHAT.slice(0,-1).filter(m=>!m.err).slice(-12).map(m=>({role:m.role,content:m.content}));
+  hist[0]={role:"user",content:SYS+"\n\nToday's date: "+today()+"\n\nCandidate: "+hist[0].content};
+  try{
+    const r=await sample(hist,{cache:false,signal:chatCtl.signal,tools:TOOLS,onText:({text})=>{bot.content=text;drawChat();}});
+    bot.content=r.text||bot.content||"Sorry, I couldn't answer that.";
+  }catch(e){
+    bot.err=true;
+    bot.content=e&&e.code==="rate_limited"?"Too many questions at once. Please wait a minute and try again.":e&&e.code==="not_granted"?"The chatbot isn't enabled for this view.":(e&&e.text)||"Something went wrong. Please try again.";
+  }
+  chatBusy=false;$("chatsend").disabled=false;drawChat();
+}
+
+// ---- Calendar ----
+const _n=new Date();let calY=_n.getFullYear(),calM=_n.getMonth(),calView="month",calSel=null;
+const MN=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const EV={open:["#1a8f5a","Applications open"],last:["#c63b3b","Last date"],exam:["#e8772e","Exam"],result:["#6b3fa0","Result / update"]};
+const SHORT=b=>b.replace("State Bank of India","SBI").replace("Punjab National Bank","PNB").replace("Bank of Baroda","BoB").replace("Union Bank of India","Union Bank").replace("Central Bank of India","Central Bank").replace("Reserve Bank of India","RBI").replace("Bank of Maharashtra","BOM");
+function calEvents(){
+  const out=[];(JOBS||[]).forEach(j=>{const n=SHORT(j.bank||"")+" – "+(j.post||"");
+    if(j.notified)out.push({d:j.notified,t:"open",n,j});
+    if(j.lastDate)out.push({d:j.lastDate,t:"last",n,j});
+    if(j.examDate)out.push({d:j.examDate,t:"exam",n,j});
+    if(j.resultDate)out.push({d:j.resultDate,t:"result",n:n+(j.stage?" · "+j.stage:""),j});});
+  return out;
+}
+// ---- Hand-off to the candidate's own AI app ----
+const AI_PREFILL={chatgpt:q=>"https://chatgpt.com/?q="+encodeURIComponent(q),claude:q=>"https://claude.ai/new?q="+encodeURIComponent(q),perplexity:q=>"https://www.perplexity.ai/search?q="+encodeURIComponent(q)};
+const AI_BASE={chatgpt:"https://chatgpt.com/",gemini:"https://gemini.google.com/app",claude:"https://claude.ai/new",perplexity:"https://www.perplexity.ai/",copilot:"https://copilot.microsoft.com/"};
+const AI_NAME={chatgpt:"ChatGPT",gemini:"Gemini",claude:"Claude",perplexity:"Perplexity",copilot:"Copilot"};
+function aiPrompt(q){return "I'm preparing for Indian public sector bank lateral-entry officer exams (SBI CBO/SCO, PNB LBO, BOM Generalist, IBPS SO, Scale I–IV). Act as my exam mentor: answer concisely with exam-relevant facts, mention anything that may have changed recently, and point to RBI or official bank sources.\n\nMy question: "+q;}
+function aiUpdate(){const q=$("chatin").value.trim();document.querySelectorAll("#aiapps a.aib").forEach(a=>{const k=a.dataset.ai;a.href=q&&AI_PREFILL[k]?AI_PREFILL[k](aiPrompt(q)):AI_BASE[k];});}
+$("chatin").addEventListener("input",aiUpdate);
+async function aiCopy(){const q=$("chatin").value.trim();if(!q)return false;try{await navigator.clipboard.writeText(aiPrompt(q));return true;}catch(e){return false;}}
+document.querySelectorAll("#aiapps a.aib").forEach(a=>a.addEventListener("click",async e=>{
+  const q=$("chatin").value.trim();const k=a.dataset.ai;
+  if(!q){e.preventDefault();toast("Type your question first");$("chatin").focus();return;}
+  try{localStorage.setItem("lbp_ai",k);}catch(_){}
+  const ok=await aiCopy();
+  if(!AI_PREFILL[k])toast(ok?`Question copied – paste it in ${AI_NAME[k]}`:`Opening ${AI_NAME[k]} – type your question there`);
+}));
+$("aicopy").onclick=async()=>{if(!$("chatin").value.trim()){toast("Type your question first");return;}toast(await aiCopy()?"Question copied – paste it in any AI app":"Couldn't copy – select the text and copy it");};
+(function(){try{const k=localStorage.getItem("lbp_ai");const a=k&&document.querySelector(`#aiapps a[data-ai="${k}"]`);if(a){a.classList.add("fav");a.parentNode.prepend(a);}}catch(_){}})();
+
+// ---- Live data for the Android app: downloaded from GitHub, cached on the phone ----
+function useJobs(list,updated,live){JOBS=list;JOBS_UPDATED=updated||JOBS_UPDATED;JOBS_LIVE=live;renderJobs();if(!$("v-cal").classList.contains("hide"))renderCal();}
+async function loadJobsLive(){
+  let cached=null;try{cached=JSON.parse(localStorage.getItem("lbp_jobs")||"null");}catch(e){}
+  if(!JOBS)useJobs(cached&&cached.jobs?cached.jobs:SNAPSHOT,cached?cached.updated:SNAP_DATE,false);
+  JOBS_FETCHING=true;renderJobs();
+  try{
+    const r=await fetch(DATA_URL+"?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok)throw new Error(r.status);
+    const d=await r.json();
+    if(!Array.isArray(d.jobs))throw new Error("bad data");
+    try{localStorage.setItem("lbp_jobs",JSON.stringify(d));}catch(e){}
+    JOBS_FETCHING=false;useJobs(d.jobs,d.updated,true);
+  }catch(e){JOBS_FETCHING=false;renderJobs();}
+}
+function fmtUpd(iso){const d=new Date(iso);return isNaN(d)?iso:d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});}
+const _renderJobs=renderJobs;
+renderJobs=function(){_renderJobs();if(!SNAP||!$("jobs"))return;
+  const msg=JOBS_FETCHING?"Checking for the latest openings and results…":JOBS_LIVE?`Updated ${fmtUpd(JOBS_UPDATED)}. New openings and results are added every 3 days.`:`Showing the list saved on ${fmtUpd(JOBS_UPDATED)}. Connect to the internet and tap Refresh for the latest.`;
+  $("jobs").insertAdjacentHTML("afterbegin",`<div class="card" style="display:flex;align-items:center;gap:10px;font-size:13.5px;${JOBS_LIVE?"":"background:#fff8f1;border-color:#f6d3b5"}"><span style="flex:1">${msg}</span><button class="chip" type="button" onclick="loadJobsLive()" ${JOBS_FETCHING?"disabled":""}>Refresh</button></div>`);};
+function renderCal(){
+  const box=$("v-cal");const tdy=today();const ev=calEvents();
+  const tabs=`<div class="chips" id="calv" style="margin-bottom:12px">
+    <button class="chip ${calView==="month"?"on":""}" data-c="month">Month</button>
+    <button class="chip ${calView==="year"?"on":""}" data-c="year">Year at a glance</button></div>`;
+  let body="";
+  if(calView==="month"){
+    const mk=`${calY}-${String(calM+1).padStart(2,"0")}`;
+    const first=new Date(calY,calM,1),days=new Date(calY,calM+1,0).getDate(),lead=(first.getDay()+6)%7;
+    let cells="";for(let k=0;k<lead;k++)cells+=`<div></div>`;
+    for(let d=1;d<=days;d++){const ds=`${mk}-${String(d).padStart(2,"0")}`;const de=ev.filter(e=>e.d===ds);
+      const dots=[...new Set(de.map(e=>e.t))].map(t=>`<i style="background:${EV[t][0]}"></i>`).join("");
+      cells+=`<button class="cd${ds===tdy?" td":""}${ds===calSel?" sel":""}${de.length?" has":""}" data-d="${ds}">${d}<span>${dots}</span></button>`;}
+    const listEv=(calSel&&calSel.startsWith(mk)?ev.filter(e=>e.d===calSel):ev.filter(e=>e.d.startsWith(mk))).sort((a,b)=>a.d.localeCompare(b.d));
+    const win=CAL.filter(r=>r[4]&&r[4].includes(calM+1));
+    body=`<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <button class="chip" data-nav="-1">‹</button><h2 style="margin:0">${MN[calM]} ${calY}</h2><button class="chip" data-nav="1">›</button></div>
+      <div class="cg cw">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(w=>`<div>${w}</div>`).join("")}</div>
+      <div class="cg">${cells}</div>
+      <div class="leg">${Object.values(EV).map(v=>`<span><i style="background:${v[0]}"></i>${v[1]}</span>`).join("")}</div></div>
+    <div class="card"><h3>${calSel&&calSel.startsWith(mk)?"Events on "+calSel.split("-").reverse().join("."):"Events in "+MN[calM]}</h3>
+      ${listEv.length?listEv.map(e=>`<div class="evr"><i style="background:${EV[e.t][0]}"></i><div><b>${e.d.slice(8)} ${MN[calM].slice(0,3)} · ${EV[e.t][1]}</b><br><span style="font-size:13.5px">${esc(e.n)}</span>${safeUrl(e.j.link)?` · <a href="${esc(safeUrl(e.j.link))}" target="_blank" rel="noopener" style="font-size:13px">Official page</a>`:""}</div></div>`).join(""):`<p class="stat">${JOBS?"No dated events. Tap another day or month.":"Loading live events…"}</p>`}
+      ${calSel?`<button class="chip" id="calall" style="margin-top:8px">Show whole month</button>`:""}</div>
+    <div class="card"><h3>Typical drive windows in ${MN[calM]}</h3>
+      ${win.length?win.map(r=>`<div class="evr"><i style="background:${r[4].length===12?"#98a2b3":"#1f3b73"}"></i><div><b>${esc(SHORT(r[0]))}</b> – ${esc(r[1])}<br><span class="stat">${esc(r[3])} · ${esc(r[2])}</span></div></div>`).join(""):'<p class="stat">No fixed-window drives usually fall in this month.</p>'}
+      <p class="note">Based on past patterns, not announced dates.</p></div>`;
+  }else{
+    const cur=_n.getMonth();
+    body=`<div class="card"><h2>Typical recruitment windows</h2>
+      <table class="yr"><tr><th></th>${MN.map((m,k)=>`<th class="${k===cur?"cur":""}">${m[0]}</th>`).join("")}</tr>
+      ${CAL.map(r=>`<tr><td class="yl"><b>${esc(SHORT(r[0]))}</b><br><span>${esc(r[1])}</span></td>${MN.map((m,k)=>{const on=r[4]&&r[4].includes(k+1);
+        return `<td class="${k===cur?"cur":""}"><div class="yb${on?(r[4].length===12?" ya":" yo"):""}"></div></td>`}).join("")}</tr>`).join("")}
+      </table><div class="leg"><span><i style="background:#1f3b73"></i>Usual window</span><span><i style="background:#c9d2e3"></i>Year-round</span><span><i style="background:#fff1e5;border:1px solid #e8772e"></i>This month</span></div>
+      <p class="note">PNB, Punjab & Sind Bank and Bank of Maharashtra windows are quarter-based or unknown, so they show no bar. Based on past patterns, not announced dates.</p></div>
+    <div class="card"><h2>All drives</h2>${CAL.map(r=>`<div class="evr"><i style="background:#1f3b73"></i><div><b>${esc(SHORT(r[0]))}</b> – ${esc(r[1])}<br><span class="stat">${esc(r[2])} · ${esc(r[3])} · Scale ${esc(r[5])}</span> · <a href="${r[6]}" target="_blank" rel="noopener" style="font-size:13px">Careers page</a></div></div>`).join("")}</div>`;
+  }
+  box.innerHTML=tabs+body+`<div class="card"><h2>Experience tiers</h2><ul style="padding-left:18px;font-size:14px">
+  <li><b>Scale I general banking (2+ yrs):</b> SBI CBO, PNB LBO – officers from private, small finance banks or RRBs.</li>
+  <li><b>Scale II specialist (2–5 yrs):</b> Union Bank, BoB, BOI, PNB, SBI – credit, risk, IT, treasury, law.</li>
+  <li><b>Scale III–VI senior (6–15 yrs):</b> SBI SCO, BoB, Union Bank, RBI – leadership, cyber, economics, wealth.</li></ul></div>`;
+}
+$("v-cal").addEventListener("click",e=>{
+  const v=e.target.closest("[data-c]");if(v){calView=v.dataset.c;renderCal();return;}
+  const n=e.target.closest("[data-nav]");if(n){calM+=+n.dataset.nav;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}calSel=null;renderCal();return;}
+  const d=e.target.closest(".cd");if(d){calSel=calSel===d.dataset.d?null:d.dataset.d;renderCal();return;}
+  if(e.target.id==="calall"){calSel=null;renderCal();}
+});
+function renderGist(){
+  $("v-gist").innerHTML=GIST.map(g=>`<div class="card gist"><h2>${g.title}</h2><dl>${g.rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl>
+  <ul>${g.pts.map(p=>`<li>${p}</li>`).join("")}</ul><div class="src">Read the original: ${g.src.map(s=>`<a href="${s[1]}" target="_blank" rel="noopener">${s[0]}</a>`).join(" · ")}</div></div>`).join("")
+  +`<button class="btn" onclick="st.topic='Monetary Policy';chips('f-topic',TOPICS,'topic');startQuiz(pool(),'practice')">Quiz me on Monetary Policy</button>`;
+}
+function renderMist(){const m=store.get("bp_mis",[]);const n=Q.filter(q=>m.includes(q.id)).length;
+  $("mcount").textContent=n?`${n} question${n>1?"s":""} you got wrong. Getting one right removes it.`:"No mistakes saved yet. Take a test first.";
+  $("mstart").disabled=!n;$("mclear").disabled=!n;}
+$("mstart").onclick=()=>{const m=store.get("bp_mis",[]);startQuiz(Q.filter(q=>m.includes(q.id)),"practice");};
+$("mclear").onclick=()=>{store.set("bp_mis",[]);renderMist();toast("Mistakes cleared");};
+
+$("a-t").innerHTML=[...TOPICS,"PSB Circulars","Current Affairs"].map(t=>`<option>${t}</option>`).join("");
+$("a-save").onclick=()=>{
+  const q=$("a-q").value.trim(),o=$("a-o").value.split("\n").map(s=>s.trim()).filter(Boolean),c=+$("a-c").value;
+  if(!q||o.length!==4||c<1||c>4){toast("Add a question, exactly 4 options and a correct number 1–4");return;}
+  const item={id:"c"+Date.now(),q,o,a:c-1,t:$("a-t").value,s:[$("a-s").value],x:ALL_EX,e:$("a-e").value.trim()||"—",src:$("a-src").value.trim()||"Your entry"};
+  const cu=store.get("bp_custom",[]);cu.push(item);store.set("bp_custom",cu);Q.push(item);
+  if(!TOPICS.includes(item.t)){TOPICS.push(item.t);chips("f-topic",TOPICS,"topic");}
+  ["a-q","a-o","a-c","a-e","a-src"].forEach(i=>$(i).value="");upd();toast("Question saved to your bank");
+};
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
+</script>
+</body>
+</html>
