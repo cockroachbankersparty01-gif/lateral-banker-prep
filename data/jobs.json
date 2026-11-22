@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-22T18:00:00Z",
+ "updated": "2026-11-23T00:30:00Z",
  "jobs": [
   {
    "id": "bob-so-2026-11",
@@ -251,6 +251,65 @@
    "stage": "Online exam held 06.09.2026 – interview stage next; check bank site for result",
    "stageType": "in-process",
    "vacancies": "395"
+  },
+  {
+   "id": "sidbi-grade-ab-2026-27-08",
+   "addedAt": "2026-11-23T00:30:00Z",
+   "bank": "SIDBI",
+   "post": "Officers in Grade A (Assistant Manager) & Grade B (Manager) – General and Specialist streams (Advt. 8/Grade A and B/2026-27)",
+   "scale": "Grade A / B",
+   "vacancies": "68 (Grade A 63, Grade B 5)",
+   "experience": "Grade B: 5 years' post-qualification experience in the stream",
+   "notified": "2026-11-20",
+   "lastDate": "2026-12-11",
+   "examDate": "2026-12-27",
+   "link": "https://www.sidbi.in",
+   "note": "Apply online 21.11.2026 to 11.12.2026. Phase I & II online exam on 27.12.2026 (tentative); interviews Feb 2027."
+  },
+  {
+   "id": "exim-mt-manager-2026-27-05",
+   "addedAt": "2026-11-23T00:30:00Z",
+   "bank": "EXIM Bank",
+   "post": "Management Trainees & Managers (MM-II) – Advt. HRM/MT/M/2026-27/05",
+   "scale": "MT / MMGS-II",
+   "vacancies": "120 (90 MT + 30 Manager)",
+   "experience": "Manager: minimum 4 years' post-qualification experience",
+   "notified": "2026-11-12",
+   "lastDate": "2026-12-11",
+   "link": "https://www.eximbankindia.in/careers",
+   "note": "Online application opens 27.11.2026, closes 11.12.2026. Written test tentatively Dec 2026. Addendum dated 20.11.2026 revised MT streams – check it before applying."
+  },
+  {
+   "id": "pfrda-grade-a-2026-03",
+   "addedAt": "2026-11-23T00:30:00Z",
+   "bank": "PFRDA",
+   "post": "Officer Grade A (Assistant Manager) – Advt. 03/2026",
+   "scale": "Grade A",
+   "vacancies": "30",
+   "notified": "2026-09-03",
+   "lastDate": "2026-09-24",
+   "examDate": "2026-11-20",
+   "resultDate": "2026-11-04",
+   "resultLink": "https://www.pfrda.org.in",
+   "link": "https://www.pfrda.org.in",
+   "stage": "Phase 1 result out (4.11.2026); Phase 2 held 20.11.2026 – interview next",
+   "stageType": "in-process"
+  },
+  {
+   "id": "rbi-grade-b-py2026",
+   "addedAt": "2026-11-23T00:30:00Z",
+   "bank": "Reserve Bank of India",
+   "post": "Officers in Grade B (DR) – General / DEPR / DSIM, PY 2026 (Advt. RBISB/DA/01/2026-27)",
+   "scale": "Grade B",
+   "vacancies": "60",
+   "notified": "2026-04-29",
+   "lastDate": "2026-05-20",
+   "examDate": "2026-07-25",
+   "resultDate": "2026-10-15",
+   "resultLink": "https://www.rbi.org.in/scripts/bs_viewcontent.aspx?Id=5147",
+   "link": "https://opportunities.rbi.org.in",
+   "stage": "Final result (General cadre) declared, as reported",
+   "stageType": "final"
   }
  ]
 }
