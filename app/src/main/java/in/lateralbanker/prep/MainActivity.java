@@ -6,10 +6,14 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 public class MainActivity extends Activity {
 
@@ -43,11 +47,34 @@ public class MainActivity extends Activity {
             }
         });
 
+        web.addJavascriptInterface(new Bridge(), "Android");
         setContentView(web);
         if (savedInstanceState != null) {
             web.restoreState(savedInstanceState);
         } else {
             web.loadUrl("file:///android_asset/index.html");
+        }
+    }
+
+    /** Lets the page open a web page in an in-app panel (Custom Tab) that returns to the app on close. */
+    class Bridge {
+        @JavascriptInterface
+        public void openInApp(final String url) {
+            runOnUiThread(() -> openTab(url));
+        }
+    }
+
+    private void openTab(String url) {
+        Uri uri = Uri.parse(url);
+        if (!"https".equals(uri.getScheme())) return;
+        try {
+            CustomTabColorSchemeParams colors = new CustomTabColorSchemeParams.Builder()
+                    .setToolbarColor(Color.parseColor("#0F1729")).build();
+            CustomTabsIntent tab = new CustomTabsIntent.Builder()
+                    .setDefaultColorSchemeParams(colors).setShowTitle(true).build();
+            tab.launchUrl(this, uri);
+        } catch (Exception e) {
+            try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); } catch (Exception ignored) { }
         }
     }
 

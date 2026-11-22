@@ -517,6 +517,7 @@ async function sendChat(){
   const text=$("chatin").value.trim();if(!text||chatBusy)return;
   let sample=null;try{if(typeof claude!=="undefined"&&claude.use)sample=await claude.use("sample");}catch(e){}
   if(!sample&&MENTOR_URL)sample=workerSample;
+  if(!sample){askGoogleAI(text);return;}
   if(!sample){$("chatnote").textContent="The chatbot isn't available in this view. Open the app in Claude while signed in.";return;}
   $("chatin").value="";CHAT.push({role:"user",content:text});const bot={role:"assistant",content:""};CHAT.push(bot);drawChat();
   chatBusy=true;$("chatsend").disabled=true;chatCtl=new AbortController();
@@ -852,10 +853,10 @@ function askedHtml(q){const a=askedTag(q);if(!a)return "";return `<span class="t
 const CONFIG_URL="https://raw.githubusercontent.com/cockroachbankersparty01-gif/lateral-banker-prep/main/data/config.json";
 let MENTOR_URL="";
 try{MENTOR_URL=localStorage.getItem("lbp_mentor")||"";}catch(e){}
-function mentorUi(){const on=!!MENTOR_URL;$("chatsend").style.display=on?"":"none";
+function mentorUi(){const on=!!MENTOR_URL;$("chatsend").style.display="";
   $("chatsend").textContent="Ask";
-  $("chatnote").textContent=on?"Answers come from Google Gemini with live Google Search (free tier), with sources shown under each answer; busy times may hit daily limits – then use Ask ChatGPT. Don't share personal or account details. AI answers may contain errors – check official sources.":"Opens ChatGPT with your question and exam context already typed – free with your own ChatGPT account (free-plan usage limits apply). AI answers may contain errors – check official sources.";
-  $("chatintro").textContent=on?"Ask anything about banking awareness, RBI policy, JAIIB/CAIIB, promotions, exam pattern or interviews – answers appear right here.":"Type your question or tap a suggestion, then tap Ask ChatGPT. Your question goes with exam-mentor instructions.";}
+  $("chatnote").textContent=on?"Answers come from Google Gemini with live Google Search (free tier), with sources shown under each answer; busy times may hit daily limits – then use Ask ChatGPT. Don't share personal or account details. AI answers may contain errors – check official sources.":"Ask: Google's free AI answer – it searches Google and shows source links, in a panel inside the app (tap ✕ to return). Or use ChatGPT. AI answers may contain errors – check official sources.";
+  $("chatintro").textContent=on?"Ask anything about banking awareness, RBI policy, JAIIB/CAIIB, promotions, exam pattern or interviews – answers appear right here.":"Type your question or tap a suggestion, then tap Ask. You'll get the best answer from a Google search with source links, without leaving the app.";}
 (async()=>{mentorUi();try{const r=await fetch(CONFIG_URL+"?t="+Date.now(),{cache:"no-store"});if(r.ok){const c=await r.json();const u=/^https:\/\//.test(c.mentorUrl||"")?c.mentorUrl:"";MENTOR_URL=u;try{localStorage.setItem("lbp_mentor",u);}catch(e){}mentorUi();}}catch(e){}})();
 function mentorCtx(){
   const g=GIST[0]?GIST[0].title+": "+GIST[0].rows.map(r=>r[0]+" "+r[1]).join("; "):"";
@@ -875,8 +876,21 @@ async function workerSample(hist,opts){
 function srcHtml(m){
   const s=(m.src||[]).filter(x=>/^https:\/\//.test(x.uri||""));const q=m.qs||[];
   if(!s.length&&!q.length)return "";
-  return `<div class="msrc">${s.length?`<div class="msh">Sources</div>${s.map((x,i)=>`<a href="${esc(x.uri)}" target="_blank" rel="noopener">${i+1}. ${esc(x.title)}</a>`).join("")}`:""}${q.length?`<div class="mq">${q.map(t=>`<a class="chip" href="https://www.google.com/search?q=${encodeURIComponent(t)}" target="_blank" rel="noopener">Google: ${esc(t)}</a>`).join("")}</div>`:""}</div>`;
+  return `<div class="msrc">${s.length?`${m.reopen?"":`<div class="msh">Sources</div>`}${s.map((x,i)=>`<a href="${esc(x.uri)}" target="_blank" rel="noopener">${m.reopen?"":(i+1)+". "}${esc(x.title)}</a>`).join("")}`:""}${q.length?`<div class="mq">${q.map(t=>`<a class="chip" href="https://www.google.com/search?q=${encodeURIComponent(t)}" target="_blank" rel="noopener">Google: ${esc(t)}</a>`).join("")}</div>`:""}</div>`;
 }
+
+// ---- No-setup mode: Google AI answer (searches Google, shows sources) in an in-app panel ----
+function inApp(url){try{if(window.Android&&Android.openInApp){Android.openInApp(url);return true;}}catch(e){}return false;}
+function aiModeUrl(q){return "https://www.google.com/search?udm=50&q="+encodeURIComponent(q+" – answer for Indian bank exams (PSB lateral entry / JAIIB / CAIIB / promotion); use RBI and official sources");}
+function askGoogleAI(text){
+  $("chatin").value="";aiUpdate();
+  CHAT.push({role:"user",content:text});
+  const url=aiModeUrl(text);
+  CHAT.push({role:"assistant",content:"Opening **Google's AI answer** for this question – it searches Google and lists the source links. Tap ✕ at the top to come back here.",src:[{title:"↻ Open Google's answer again",uri:url}],reopen:true});
+  drawChat();
+  if(!inApp(url)){const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();}
+}
+document.addEventListener("click",e=>{const a=e.target.closest(".msrc a");if(!a)return;if(inApp(a.href))e.preventDefault();});
 
 function renderCal(){
   const box=$("v-cal");const tdy=today();const ev=calEvents();
