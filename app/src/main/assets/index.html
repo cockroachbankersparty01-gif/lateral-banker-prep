@@ -480,7 +480,7 @@ function renderJobs(){
 let CHAT=[],chatBusy=false,chatCtl=null;
 function openChat(){$("chatwrap").classList.remove("hide");$("fab").classList.add("hide");document.body.style.overflow="hidden";drawChat();setTimeout(()=>$("chatin").focus(),50);}
 function closeChat(){$("chatwrap").classList.add("hide");$("fab").classList.remove("hide");document.body.style.overflow="";}
-$("fab").onclick=openChat;$("chatclose").onclick=closeChat;
+$("fab").onclick=openChat;$("chatclose").onclick=()=>{if(PANEL_OPEN){try{Android.closePanel();}catch(e){}setPanelUi(false);return;}closeChat();};
 $("chatwrap").onclick=e=>{if(e.target.id==="chatwrap")closeChat();};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("chatwrap").classList.contains("hide"))closeChat();});
 const SUGG=["Explain the October 2026 MPC decision","Difference between SDF and MSF?","What is asked in SBI CBO interview?","Which openings are open now?","SARFAESI steps for a Scale III branch head","Make 5 MCQs on KYC"];
@@ -855,7 +855,7 @@ let MENTOR_URL="";
 try{MENTOR_URL=localStorage.getItem("lbp_mentor")||"";}catch(e){}
 function mentorUi(){const on=!!MENTOR_URL;$("chatsend").style.display="";
   $("chatsend").textContent="Ask";
-  $("chatnote").textContent=on?"Answers come from Google Gemini with live Google Search (free tier), with sources shown under each answer; busy times may hit daily limits – then use Ask ChatGPT. Don't share personal or account details. AI answers may contain errors – check official sources.":"Ask: Google's free AI answer – it searches Google and shows source links, in a panel inside the app (tap ✕ to return). Or use ChatGPT. AI answers may contain errors – check official sources.";
+  $("chatnote").textContent=on?"Answers come from Google Gemini with live Google Search (free tier), with sources shown under each answer; busy times may hit daily limits – then use Ask ChatGPT. Don't share personal or account details. AI answers may contain errors – check official sources.":"Ask: Google's free AI answer – it searches Google and shows source links right here in Ask Mentor (tap ✕ to return to the chat). Or use ChatGPT. AI answers may contain errors – check official sources.";
   $("chatintro").textContent=on?"Ask anything about banking awareness, RBI policy, JAIIB/CAIIB, promotions, exam pattern or interviews – answers appear right here.":"Type your question or tap a suggestion, then tap Ask. You'll get the best answer from a Google search with source links, without leaving the app.";}
 (async()=>{mentorUi();try{const r=await fetch(CONFIG_URL+"?t="+Date.now(),{cache:"no-store"});if(r.ok){const c=await r.json();const u=/^https:\/\//.test(c.mentorUrl||"")?c.mentorUrl:"";MENTOR_URL=u;try{localStorage.setItem("lbp_mentor",u);}catch(e){}mentorUi();}}catch(e){}})();
 function mentorCtx(){
@@ -880,13 +880,18 @@ function srcHtml(m){
 }
 
 // ---- No-setup mode: Google AI answer (searches Google, shows sources) in an in-app panel ----
-function inApp(url){try{if(window.Android&&Android.openInApp){Android.openInApp(url);return true;}}catch(e){}return false;}
+let PANEL_OPEN=false;
+function setPanelUi(open){PANEL_OPEN=open;const sub=$("chathead").querySelector("div div");if(sub)sub.textContent=open?"Google's answer · tap ✕ to go back to chat":"Banking awareness · RBI · exams · interviews";$("chatclose").setAttribute("aria-label",open?"Back to chat":"Close chat");}
+window.onPanelClosed=()=>setPanelUi(false);
+function inApp(url){try{
+  if(window.Android&&Android.showPanel){$("chatin").blur();const top=Math.round($("chathead").getBoundingClientRect().bottom);Android.showPanel(url,top);setPanelUi(true);return true;}
+  if(window.Android&&Android.openInApp){Android.openInApp(url);return true;}}catch(e){}return false;}
 function aiModeUrl(q){return "https://www.google.com/search?udm=50&q="+encodeURIComponent(q+" – answer for Indian bank exams (PSB lateral entry / JAIIB / CAIIB / promotion); use RBI and official sources");}
 function askGoogleAI(text){
   $("chatin").value="";aiUpdate();
   CHAT.push({role:"user",content:text});
   const url=aiModeUrl(text);
-  CHAT.push({role:"assistant",content:"Opening **Google's AI answer** for this question – it searches Google and lists the source links. Tap ✕ at the top to come back here.",src:[{title:"↻ Open Google's answer again",uri:url}],reopen:true});
+  CHAT.push({role:"assistant",content:"Showing **Google's AI answer** for this question below – it searches Google and lists the source links. Tap ✕ at the top to come back to this chat.",src:[{title:"↻ Open Google's answer again",uri:url}],reopen:true});
   drawChat();
   if(!inApp(url)){const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();}
 }
