@@ -114,6 +114,10 @@ details.sd summary .tag{margin-left:auto;font-weight:600}
 .sb ul,.sl{padding-left:18px;font-size:14px;line-height:1.55}.sb li,.sl li{margin-bottom:4px}
 .sb .pt td{text-align:left!important;white-space:normal!important}
 .tag.yr{background:#fff1e5!important;color:#a24d12!important}
+.aib.gptmain{width:100%;justify-content:center;min-height:50px;background:#10a37f;color:#fff;border-color:#10a37f;font-size:15px;margin-bottom:8px}
+.aib.gptmain i{background:#fff!important;color:#10a37f}
+.moreai summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--mut);padding:4px 0 8px;list-style:none}
+.moreai summary::-webkit-details-marker{display:none}.moreai summary::after{content:" ▾"}
 </style>
 </head>
 <body>
@@ -251,7 +255,7 @@ details.sd summary .tag{margin-left:auto;font-weight:600}
       <button id="chatclose" type="button" aria-label="Close chat">✕</button>
     </div>
     <div id="chatbody">
-      <p class="stat" id="chatintro" style="margin-bottom:10px">Type your question, then pick your AI app. Your question goes with exam-mentor instructions.</p>
+      <p class="stat" id="chatintro" style="margin-bottom:10px">Type your question or tap a suggestion, then tap Ask ChatGPT. Your question goes with exam-mentor instructions.</p>
       <div id="chatlog"></div>
       <div class="chips" id="sugg" style="margin:4px 0 6px"></div>
     </div>
@@ -260,17 +264,17 @@ details.sd summary .tag{margin-left:auto;font-weight:600}
       <button class="btn" id="chatsend" aria-label="Ask here">Ask here</button>
     </form>
     <div id="aiapps">
-      <div class="aih">Or ask in your AI app</div>
+      <a class="aib gptmain" data-ai="chatgpt" href="https://chatgpt.com/" target="_blank" rel="noopener"><i style="background:#10a37f">G</i>Ask ChatGPT (free)</a>
+      <details class="moreai"><summary>More AI apps</summary>
       <div class="aig">
-        <a class="aib" data-ai="chatgpt" href="https://chatgpt.com/" target="_blank" rel="noopener"><i style="background:#10a37f">G</i>ChatGPT</a>
         <a class="aib" data-ai="gemini" href="https://gemini.google.com/app" target="_blank" rel="noopener"><i style="background:#4b6ef5">✦</i>Gemini</a>
         <a class="aib" data-ai="claude" href="https://claude.ai/new" target="_blank" rel="noopener"><i style="background:#d97757">C</i>Claude</a>
         <a class="aib" data-ai="perplexity" href="https://www.perplexity.ai/" target="_blank" rel="noopener"><i style="background:#1f8a8a">P</i>Perplexity</a>
         <a class="aib" data-ai="copilot" href="https://copilot.microsoft.com/" target="_blank" rel="noopener"><i style="background:#2b6cb0">Co</i>Copilot</a>
         <button class="aib" type="button" id="aicopy"><i style="background:#667085">⧉</i>Copy</button>
-      </div>
+      </div></details>
     </div>
-    <p class="note" id="chatnote" style="padding:0 14px 10px;margin:0">Opens the app if it's installed, otherwise its website. Your question goes with exam context. AI answers may contain errors – check official sources.</p>
+    <p class="note" id="chatnote" style="padding:0 14px 10px;margin:0">Opens ChatGPT with your question and exam context already typed – free with your own ChatGPT account (free-plan usage limits apply). AI answers may contain errors – check official sources.</p>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -553,7 +557,7 @@ document.querySelectorAll("#aiapps a.aib").forEach(a=>a.addEventListener("click"
   if(!AI_PREFILL[k])toast(ok?`Question copied – paste it in ${AI_NAME[k]}`:`Opening ${AI_NAME[k]} – type your question there`);
 }));
 $("aicopy").onclick=async()=>{if(!$("chatin").value.trim()){toast("Type your question first");return;}toast(await aiCopy()?"Question copied – paste it in any AI app":"Couldn't copy – select the text and copy it");};
-(function(){try{const k=localStorage.getItem("lbp_ai");const a=k&&document.querySelector(`#aiapps a[data-ai="${k}"]`);if(a){a.classList.add("fav");a.parentNode.prepend(a);}}catch(_){}})();
+(function(){try{const k=localStorage.getItem("lbp_ai");const a=k&&k!=="chatgpt"&&document.querySelector(`#aiapps .aig a[data-ai="${k}"]`);if(a){a.classList.add("fav");a.parentNode.prepend(a);}}catch(_){}})();
 
 // ---- Live data for the Android app: downloaded from GitHub, cached on the phone ----
 function useJobs(list,updated,live){JOBS=list;JOBS_UPDATED=updated||JOBS_UPDATED;JOBS_LIVE=live;renderJobs();if(!$("v-cal").classList.contains("hide"))renderCal();}
