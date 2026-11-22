@@ -6,6 +6,9 @@ on:
       - 'data/**'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,7 +23,19 @@ jobs:
           gradle-version: '8.7'
       - name: Build debug APK
         run: gradle assembleDebug
+      - name: Rename APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk LateralBankerPrep.apk
       - uses: actions/upload-artifact@v4
         with:
           name: LateralBankerPrep-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: LateralBankerPrep.apk
+      - name: Publish as a release (direct download link)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Lateral Banker Prep – build ${{ github.run_number }}
+          make_latest: true
+          body: |
+            Download **LateralBankerPrep.apk** below and open it on your Android phone (Android 7.0+).
+            Allow "Install unknown apps" when asked. Jobs and results update inside the app automatically.
+          files: LateralBankerPrep.apk
