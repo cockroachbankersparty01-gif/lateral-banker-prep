@@ -6,3 +6,5 @@ local.properties
 *.iml
 __pycache__/
 *.pyc
+notes-src/fonts/
+notes-src/out/

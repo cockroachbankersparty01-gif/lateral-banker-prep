@@ -99,6 +99,24 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> hidePanel(false));
         }
 
+        /** Opens the Detailed Banking Notes PDF in the in-app reader. */
+        @JavascriptInterface
+        public void openNotes() {
+            runOnUiThread(() -> startActivity(new Intent(MainActivity.this, PdfActivity.class)));
+        }
+
+        /** Saves the notes PDF to the phone (Downloads › Lateral Banker Prep). */
+        @JavascriptInterface
+        public void saveNotes() {
+            runOnUiThread(() -> NotesFile.save(MainActivity.this));
+        }
+
+        /** Last page the user read in the notes (1-based), or 0 if never opened. */
+        @JavascriptInterface
+        public int notesLastPage() {
+            return NotesFile.lastPage(MainActivity.this) + 1;
+        }
+
         /** Downloads a page or RSS feed directly from the phone (no server in between) and hands the text back to the page. */
         @JavascriptInterface
         public void fetchText(final String id, final String url) {
@@ -229,6 +247,18 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); } catch (Exception ignored) { }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (web != null) web.evaluateJavascript("window.onAppResume && window.onAppResume()", null);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == NotesFile.REQ_SAVE) NotesFile.onSaveResult(this, resultCode, data);
     }
 
     @Override

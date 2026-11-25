@@ -6,6 +6,7 @@ on:
       - 'data/**'
       - 'scripts/**'
       - '.github/workflows/daily-update.yml'
+      - 'notes-src/**'
   workflow_dispatch:
 
 permissions:

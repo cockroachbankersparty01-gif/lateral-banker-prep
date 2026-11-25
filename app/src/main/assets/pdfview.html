@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5, user-scalable=yes">
+<title>Banking Notes 2026</title>
+<style>
+  html, body { margin: 0; background: #E9EDF4; -webkit-tap-highlight-color: transparent; }
+  #pages { padding: 8px 6px 28px; }
+  .pg { position: relative; height: 0; margin: 0 auto 8px; background: #fff; box-shadow: 0 1px 3px rgba(15, 23, 41, .18); }
+  .pg img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+  .pg .ph { position: absolute; left: 0; right: 0; top: 42%; text-align: center; color: #9AA3B5; font: 13px sans-serif; }
+  .pg.ok .ph { display: none; }
+</style>
+</head>
+<body>
+<div id="pages"></div>
+<script>
+(function () {
+  var info = JSON.parse(Pdf.info());
+  var box = document.getElementById("pages");
+  var dpr = window.devicePixelRatio || 1;
+  var pages = [];
+  var current = -1;
+
+  // One placeholder per page, sized from the real page shape so scrolling is stable before images arrive.
+  for (var i = 0; i < info.pages; i++) {
+    var s = info.sizes[i] || [420, 595];
+    var d = document.createElement("div");
+    d.className = "pg";
+    d.style.paddingTop = (s[1] / s[0] * 100).toFixed(4) + "%";
+    d.dataset.i = i;
+    d.innerHTML = '<div class="ph">Page ' + (i + 1) + "</div>";
+    box.appendChild(d);
+    pages.push(d);
+  }
+
+  function baseWidth() {
+    return Math.min(2000, Math.round(box.clientWidth * dpr * 1.5));
+  }
+
+  function load(d, w) {
+    var img = d.querySelector("img");
+    if (!img) {
+      img = document.createElement("img");
+      img.alt = "Page " + (+d.dataset.i + 1);
+      img.onload = function () { d.classList.add("ok"); };
+      img.onerror = function () {   // try again smaller (low-memory phones)
+        var cw = +img.dataset.w || baseWidth();
+        if (cw > 500 && !img.dataset.retry) {
+          img.dataset.retry = 1;
+          setTimeout(function () { load(d, Math.round(cw * 0.6)); }, 300);
+        }
+      };
+      d.appendChild(img);
+    }
+    w = w || baseWidth();
+    if (+img.dataset.w >= w) return;
+    img.dataset.w = w;
+    img.src = "https://pdf.local/page/" + d.dataset.i + "?w=" + w;
+  }
+
+  function unload(d) {
+    var img = d.querySelector("img");
+    if (img) { d.removeChild(img); d.classList.remove("ok"); }
+  }
+
+  // Load pages near the screen; drop images far away to keep memory low.
+  var near = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { if (e.isIntersecting) load(e.target); });
+  }, { rootMargin: "150% 0px" });
+  var far = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { if (!e.isIntersecting) unload(e.target); });
+  }, { rootMargin: "600% 0px" });
+  pages.forEach(function (d) { near.observe(d); far.observe(d); });
+
+  // Current page = the one covering the upper third of the screen.
+  function track() {
+    var y = window.scrollY + window.innerHeight / 3, lo = 0, hi = pages.length - 1;
+    while (lo < hi) {   // binary search on page tops
+      var mid = (lo + hi + 1) >> 1;
+      if (pages[mid].offsetTop <= y) lo = mid; else hi = mid - 1;
+    }
+    if (lo !== current) { current = lo; Pdf.onPage(lo); }
+  }
+  var tid = 0;
+  window.addEventListener("scroll", function () { clearTimeout(tid); tid = setTimeout(track, 120); }, { passive: true });
+
+  // After zooming in, redraw the current page sharper.
+  if (window.visualViewport) {
+    var zid = 0;
+    window.visualViewport.addEventListener("resize", function () {
+      clearTimeout(zid);
+      zid = setTimeout(function () {
+        var sc = window.visualViewport.scale || 1;
+        track();
+        if (sc > 1.5 && current >= 0) {
+          var w = Math.min(2200, Math.round(box.clientWidth * dpr * Math.min(sc, 2.5)));
+          load(pages[current], w);
+        }
+      }, 400);
+    });
+  }
+
+  window.goTo = function (p) {
+    p = Math.max(0, Math.min(pages.length - 1, p | 0));
+    window.scrollTo(0, pages[p].offsetTop - 6);
+    setTimeout(track, 60);
+  };
+
+  if (info.last > 0) window.goTo(info.last); else track();
+})();
+</script>
+</body>
+</html>

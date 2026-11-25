@@ -29,5 +29,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- In-app reader for the Detailed Banking Notes PDF -->
+        <activity
+            android:name=".PdfActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
     </application>
 </manifest>
