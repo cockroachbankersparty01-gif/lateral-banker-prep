@@ -35,8 +35,10 @@ I = re.I
 CATS = [
     ("Appointments", re.compile(r"\b(appoint\w*|re-?appoint\w*|named|takes? (over )?charge|assumes? charge|elevated|tenure extend\w*|to head|new (md|ceo|chairman|chief))\b", I)),
     ("Penalties & licences", re.compile(r"\b(penalt\w*|imposes|fined|monetary penalty|cancels? (the )?licen[cs]e|licen[cs]e cancell\w*|restrictions?|section 35a|supersed\w*)\b", I)),
-    ("Mergers & deals", re.compile(r"\b(merger|amalgamat\w*|acqui\w*|stake|takeover|ipo|qip|capital rais\w*|raises? (rs|₹)|bonds? issue|infra bonds?)\b", I)),
     ("MoUs & tie-ups", re.compile(r"\b(mou|ties? up|tie-up|partners? with|partnership|collaborat\w*|joins hands|signs? (an? )?(agreement|pact|deal))\b", I)),
+    ("Mergers & deals", re.compile(r"\b(merger|amalgamat\w*|acqui\w*|stake|takeover|ipo|qip|capital rais\w*|raises? (rs|₹)|bonds? issue|infra bonds?)\b", I)),
+    ("RBI", re.compile(r"\b(rbi|reserve bank)\b", I)),
+    ("Regulators & DFIs", re.compile(r"\b(sebi|irdai|pfrda|ifsca|nabard|sidbi|exim bank|nhb|national housing bank|ibbi)\b", I)),
     ("Launches", re.compile(r"\b(launch\w*|unveil\w*|introduc\w*|rolls? out|inaugurat\w*)\b", I)),
     ("Digital & payments", re.compile(r"\b(upi|npci|digital|fintech|payments?|cbdc|e-rupee|cards?|cyber|fraud\w*|aeps|fastag|imps|neft|rtgs|wallets?)\b", I)),
     ("Govt & schemes", re.compile(r"\b(scheme|yojana|mission|cabinet|ministry|government|budget|sitharaman|parliament)\b", I)),
@@ -44,7 +46,8 @@ CATS = [
 ]
 RBI_ROUTINE = re.compile(r"money market operations|variable rate (reverse )?repo|\bvrrr?\b|treasury bills?|t-bills?|cash management bills?|state government securities|\bsdl\b|government stock|auction|result of|cut-?off|underwriting|reserve money|lendings? and deposits|weekly statistical|sectoral deployment|payment system indicators|liquidity adjustment|\bomo\b|open market operation|switch|conversion of|buyback|calendar for|foreign exchange turnover|money supply|redemption", I)
 FIN = re.compile(r"\b(bank\w*|lend\w*|sbi|pnb|bob|hdfc|icici|axis|kotak|idbi|iob|uco|yes bank|rbi|reserve bank|npci|upi|sebi|irdai|pfrda|nabard|sidbi|exim|nhb|financ\w*|credit|loans?|deposits?|payments?|fintech|insurance|pension|mudra|jan dhan|imf|world bank|adb|aiib|ndb|gdp|inflation|economy|rupee|forex|bonds?|msmes?|exports?|gst|investment)\b", I)
-JUNK = re.compile(r"\b(share price|shares? (jump|fall|rise|surge|slip|gain|drop|tank|rally|soar|plunge)\w*|stocks? to (buy|watch)|target price|sensex|nifty|brokerage|buy rating|sell rating|multibagger|gmp|q[1-4] (results?|earnings)|quarterly results|net profit|profit (rises|falls|jumps|surges|declines|up|down)|recruitment|vacanc\w*|admit card|exam date|syllabus|answer key|cut off marks|horoscope|cricket|movie)\b", I)
+TRUSTED = re.compile(r"\b(the hindu|businessline|economic times|etbfsi|et bfsi|business standard|mint|livemint|moneycontrol|financial express|ndtv|cnbc|news ?on ?air|newsonair|dd news|pib|press trust|pti|ani|hindustan times|times of india|indian express|new indian express|india today|deccan herald|deccan chronicle|theprint|the print|reuters|bloomberg|bq prime|businessworld|bw business|fortune india|outlook|zee business|statesman|tribune|free press journal|business today|inc42|medianama|entrackr|yourstory|the week|firstpost|news18|ians|telangana today|psu watch)\b", I)
+JUNK = re.compile(r"\b(bitcoin|crypto\w*|stablecoins?|solana|ethereum|nft|share price|shares? (jump|fall|rise|surge|slip|gain|drop|tank|rally|soar|plunge)\w*|stocks? to (buy|watch)|target price|sensex|nifty|brokerage|buy rating|sell rating|multibagger|gmp|q[1-4] (results?|earnings)|quarterly results|net profit|profit (rises|falls|jumps|surges|declines|up|down)|recruitment|vacanc\w*|admit card|exam date|syllabus|answer key|cut off marks|horoscope|cricket|movie)\b", I)
 
 
 def key(t):
@@ -93,9 +96,17 @@ def items(raw):
     return out
 
 
+def keep(i):
+    if i.get("off"):
+        return not (i.get("src", "").startswith("RBI") and RBI_ROUTINE.search(i["t"]))
+    return bool(TRUSTED.search(i.get("src", ""))) and bool(FIN.search(i["t"])) and not JUNK.search(i["t"])
+
+
 def official(f):
     res = []
-    for i in items(fetch(f["u"])):
+    raw = items(fetch(f["u"]))
+    print(f"{f['src']}: {len(raw)} items in feed", file=sys.stderr)
+    for i in raw:
         if f.get("rbi") and RBI_ROUTINE.search(i["t"]):
             continue
         if f.get("pib") and not FIN.search(i["t"]):
@@ -112,7 +123,7 @@ def google(q):
         if src and t.endswith(" - " + src):
             t = t[: -(len(src) + 3)]
         t = t.strip()
-        if i["d"] and FIN.search(t) and not JUNK.search(t):
+        if i["d"] and TRUSTED.search(src or "") and FIN.search(t) and not JUNK.search(t):
             res.append({"t": t, "u": i["u"], "src": src or "News", "d": i["d"], "cat": cat_of(t)})
     return res
 
@@ -145,7 +156,10 @@ def main():
         elif i.get("off") and not m[k].get("off"):
             m[k] = {**i, "d": i["d"] or m[k].get("d"), "fs": m[k].get("fs", now)}
     cut = now - 45 * 864e5
-    out = sorted((i for i in m.values() if (i.get("d") or i.get("fs", 0)) >= cut), key=lambda i: -(i.get("d") or i.get("fs", 0)))[:800]
+    for i in m.values():
+        if not i.get("off"):
+            i["cat"] = cat_of(i["t"])
+    out = sorted((i for i in m.values() if keep(i) and (i.get("d") or i.get("fs", 0)) >= cut), key=lambda i: -(i.get("d") or i.get("fs", 0)))[:800]
     data = {"updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "items": out}
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as fh:
