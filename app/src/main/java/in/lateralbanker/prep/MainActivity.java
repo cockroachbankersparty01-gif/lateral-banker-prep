@@ -119,7 +119,7 @@ public class MainActivity extends Activity {
 
     /** Only these sites can be read: Google News RSS, GitHub data and the official recruitment sites. */
     private static final String[] FETCH_HOSTS = {
-            "news.google.com", "raw.githubusercontent.com",
+            "news.google.com", "raw.githubusercontent.com", "pib.gov.in",
             "sbi.bank.in", "sbi.co.in", "ibps.in", "rbi.org.in", "sidbi.in", "eximbankindia.in", "nabard.org",
             "sebi.gov.in", "pfrda.org.in", "irdai.gov.in", "nhb.org.in", "pnb.bank.in", "bankofbaroda.bank.in",
             "unionbankofindia.bank.in", "canarabank.com", "canarabank.bank.in", "bankofindia.bank.in",
