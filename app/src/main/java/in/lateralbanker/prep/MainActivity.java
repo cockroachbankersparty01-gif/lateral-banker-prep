@@ -8,6 +8,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
+
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -91,6 +98,69 @@ public class MainActivity extends Activity {
         public void closePanel() {
             runOnUiThread(() -> hidePanel(false));
         }
+
+        /** Downloads a page or RSS feed directly from the phone (no server in between) and hands the text back to the page. */
+        @JavascriptInterface
+        public void fetchText(final String id, final String url) {
+            new Thread(() -> {
+                String body = null, err = null;
+                try {
+                    body = download(url);
+                } catch (Exception e) {
+                    err = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+                }
+                final String js = "window.__fetchDone(" + JSONObject.quote(id) + ","
+                        + (body == null ? "null" : JSONObject.quote(body)) + ","
+                        + (err == null ? "null" : JSONObject.quote(err)) + ")";
+                web.post(() -> web.evaluateJavascript(js, null));
+            }).start();
+        }
+    }
+
+    /** Only these sites can be read: Google News RSS, GitHub data and the official recruitment sites. */
+    private static final String[] FETCH_HOSTS = {
+            "news.google.com", "raw.githubusercontent.com",
+            "sbi.bank.in", "sbi.co.in", "ibps.in", "rbi.org.in", "sidbi.in", "eximbankindia.in", "nabard.org",
+            "sebi.gov.in", "pfrda.org.in", "irdai.gov.in", "nhb.org.in", "pnb.bank.in", "bankofbaroda.bank.in",
+            "unionbankofindia.bank.in", "canarabank.com", "canarabank.bank.in", "bankofindia.bank.in",
+            "indianbank.bank.in", "indianbank.in", "centralbankofindia.co.in", "punjabandsindbank.co.in",
+            "bankofmaharashtra.in", "bankofmaharashtra.bank.in", "iob.in", "iob.bank.in", "ucobank.com", "uco.bank.in"
+    };
+
+    private static boolean hostAllowed(String host) {
+        if (host == null) return false;
+        host = host.toLowerCase();
+        for (String h : FETCH_HOSTS) if (host.equals(h) || host.endsWith("." + h)) return true;
+        return false;
+    }
+
+    private static String download(String address) throws Exception {
+        URL url = new URL(address);
+        for (int hop = 0; hop < 5; hop++) {
+            if (!"https".equals(url.getProtocol()) || !hostAllowed(url.getHost())) throw new Exception("site not allowed");
+            HttpURLConnection c = (HttpURLConnection) url.openConnection();
+            c.setInstanceFollowRedirects(false);
+            c.setConnectTimeout(12000);
+            c.setReadTimeout(15000);
+            c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36");
+            c.setRequestProperty("Accept-Language", "en-IN,en;q=0.9");
+            int code = c.getResponseCode();
+            if (code >= 300 && code < 400 && c.getHeaderField("Location") != null) {
+                url = new URL(url, c.getHeaderField("Location"));
+                c.disconnect();
+                continue;
+            }
+            if (code >= 400) { c.disconnect(); throw new Exception("HTTP " + code); }
+            InputStream in = c.getInputStream();
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buf = new byte[16384];
+            int n, total = 0;
+            while ((n = in.read(buf)) > 0 && total < 1_500_000) { out.write(buf, 0, n); total += n; }
+            in.close();
+            c.disconnect();
+            return out.toString("UTF-8");
+        }
+        throw new Exception("too many redirects");
     }
 
     /** Shows a web page inside the app, below the Ask Mentor header (topCssPx = header bottom in CSS pixels). */
