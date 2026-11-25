@@ -1,0 +1,40 @@
+name: Daily jobs data update
+
+# Runs on GitHub's servers twice a day; no person or AI needed.
+# The app downloads data/jobs.json from this repository every time it opens.
+on:
+  schedule:
+    - cron: '20 2 * * *'    # 07:50 IST
+    - cron: '20 10 * * *'   # 15:50 IST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests beautifulsoup4
+      - name: Update jobs
+        run: python scripts/update_jobs.py data/jobs.json
+      - name: Check the file is valid
+        run: python -c "import json; json.load(open('data/jobs.json')); print('ok')"
+      - name: Save changes
+        run: |
+          git config user.name "job-data-bot"
+          git config user.email "job-data-bot@users.noreply.github.com"
+          git add data/jobs.json
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git commit -m "Automatic jobs data update $(TZ=Asia/Kolkata date +%F)"
+          git pull --rebase -q || true
+          git push

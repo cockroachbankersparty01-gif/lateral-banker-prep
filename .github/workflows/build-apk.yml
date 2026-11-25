@@ -4,6 +4,8 @@ on:
   push:
     paths-ignore:
       - 'data/**'
+      - 'scripts/**'
+      - '.github/workflows/daily-update.yml'
   workflow_dispatch:
 
 permissions:

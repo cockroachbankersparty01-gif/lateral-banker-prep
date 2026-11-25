@@ -23,7 +23,7 @@ Send the APK to the phone (WhatsApp, Drive or USB), tap it, and allow "Install u
 
 - Practice tests, mock tests with timer, My Mistakes, Add Question (saved on the phone)
 - Exam Calendar and Policy Gist
-- Current job openings and results: downloaded from `data/jobs.json` in the GitHub repository every time the app opens (with a Refresh button), and saved on the phone for offline use. Claude's scheduled task updates that file every 3 days, so the app stays current without a new APK.
+- Current job openings and results: downloaded from `data/jobs.json` in the GitHub repository every time the app opens (with a Refresh button), and saved on the phone for offline use. A GitHub Actions job (`scripts/update_jobs.py`, schedule in `.github/workflows/daily-update.yml`) updates that file twice a day with no AI involved, so the app stays current without a new APK.
 - Ask Mentor: sends the question to ChatGPT, Claude or Perplexity (opens with the question filled in) or Gemini or Copilot (question copied; paste it in). If the app is installed it opens directly; otherwise its website opens.
 
 The built-in "Ask here" chat runs on Claude, so it is not inside the APK.
