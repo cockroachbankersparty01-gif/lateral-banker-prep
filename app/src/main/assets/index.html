@@ -793,7 +793,7 @@ const NEWS_GQ=[
 ];
 const NEWS_CATS=[
  ["Appointments",/\b(appoint\w*|re-?appoint\w*|named|takes? (over )?charge|assumes? charge|elevated|tenure extend\w*|to head|new (md|ceo|chairman|chief))\b/i],
- ["Penalties & licences",/\b(penalt\w*|imposes|fined|monetary penalty|cancels? (the )?licen[cs]e|licen[cs]e cancell\w*|restrictions?|section 35a|supersed\w*)\b/i],
+ ["Penalties & licences",/\b(penalt\w*|penalis\w*|imposes|fined|fines?|monetary penalty|cancels? (the )?licen[cs]e|licen[cs]e cancell\w*|restrictions?|section 35a|supersed\w*)\b/i],
  ["MoUs & tie-ups",/\b(mou|ties? up|tie-up|partners? with|partnership|collaborat\w*|joins hands|signs? (an? )?(agreement|pact|deal))\b/i],
  ["Mergers & deals",/\b(merger|amalgamat\w*|acqui\w*|stake|takeover|ipo|qip|capital rais\w*|raises? (rs|₹)|bonds? issue|infra bonds?)\b/i],
  ["RBI",/\b(rbi|reserve bank)\b/i],
@@ -803,16 +803,16 @@ const NEWS_CATS=[
  ["Govt & schemes",/\b(scheme|yojana|mission|cabinet|ministry|government|budget|sitharaman|parliament)\b/i],
  ["Reports & data",/\b(report|index|survey|ranking|award|data|statistics|bulletin|gdp|inflation|forex reserves?|growth)\b/i],
 ];
-const NEWS_CHIPS=["All","RBI","RBI circulars","Regulators & DFIs","Appointments","Penalties & licences","Mergers & deals","MoUs & tie-ups","Launches","Digital & payments","Govt & schemes","Reports & data","Other","Saved"];
+const NEWS_CHIPS=["All","RBI","RBI circulars","Regulators & DFIs","Appointments","Penalties & licences","Mergers & deals","MoUs & tie-ups","Launches","Digital & payments","Govt & schemes","Reports & data","Economy & others","Saved"];
 const RBI_ROUTINE=/money market operations|variable rate (reverse )?repo|\bvrrr?\b|treasury bills?|t-bills?|cash management bills?|state government securities|\bsdl\b|government stock|auction|result of|cut-?off|underwriting|reserve money|lendings? and deposits|weekly statistical|sectoral deployment|payment system indicators|liquidity adjustment|\bomo\b|open market operation|switch|conversion of|buyback|calendar for|foreign exchange turnover|money supply|redemption/i;
 const NEWS_FIN=/\b(bank\w*|lend\w*|sbi|pnb|bob|hdfc|icici|axis|kotak|idbi|iob|uco|yes bank|rbi|reserve bank|npci|upi|sebi|irdai|pfrda|nabard|sidbi|exim|nhb|financ\w*|credit|loans?|deposits?|payments?|fintech|insurance|pension|mudra|jan dhan|imf|world bank|adb|aiib|ndb|gdp|inflation|economy|rupee|forex|bonds?|msmes?|exports?|gst|investment)\b/i;
 const NEWS_TRUSTED=/\b(the hindu|businessline|economic times|etbfsi|et bfsi|business standard|mint|livemint|moneycontrol|financial express|ndtv|cnbc|news ?on ?air|newsonair|dd news|pib|press trust|pti|ani|hindustan times|times of india|indian express|new indian express|india today|deccan herald|deccan chronicle|theprint|the print|reuters|bloomberg|bq prime|businessworld|bw business|fortune india|outlook|zee business|statesman|tribune|free press journal|business today|inc42|medianama|entrackr|yourstory|the week|firstpost|news18|ians|telangana today|psu watch)\b/i;
-const NEWS_JUNK=/\b(bitcoin|crypto\w*|stablecoins?|solana|ethereum|nft|share price|shares? (jump|fall|rise|surge|slip|gain|drop|tank|rally|soar|plunge)\w*|stocks? to (buy|watch)|target price|sensex|nifty|brokerage|buy rating|sell rating|multibagger|gmp|q[1-4] (results?|earnings)|quarterly results|net profit|profit (rises|falls|jumps|surges|declines|up|down)|recruitment|vacanc\w*|admit card|exam date|syllabus|answer key|cut off marks|horoscope|cricket|movie)\b/i;
+const NEWS_JUNK=/\b(power banks?|bangladesh|dhaka|tk ?[\d,]+ ?(cr|crore)|opinion|editorial|podcast|video|live updates|newsletter|bitcoin|crypto\w*|stablecoins?|solana|ethereum|nft|share price|shares? (jump|fall|rise|surge|slip|gain|drop|tank|rally|soar|plunge)\w*|stocks? to (buy|watch)|target price|sensex|nifty|brokerage|buy rating|sell rating|multibagger|gmp|q[1-4] (results?|earnings)|quarterly results|net profit|profit (rises|falls|jumps|surges|declines|up|down)|recruitment|vacanc\w*|admit card|exam date|syllabus|answer key|cut off marks|horoscope|cricket|movie)\b/i;
 function newsKey(t){return String(t).toLowerCase().replace(/[^a-z0-9]+/g,"").slice(0,80);}
 function newsCatOf(t,f){
   if(f&&f.cat)return f.cat;
   for(const [c,r] of NEWS_CATS)if(r.test(t))return f&&f.rbi&&c!=="Penalties & licences"&&c!=="Appointments"?"RBI":c;
-  return f&&f.rbi?"RBI":f&&f.pib?"Govt & schemes":"Other";
+  return f&&f.rbi?"RBI":f&&f.pib?"Govt & schemes":"Economy & others";
 }
 function pDateRss(s){if(!s)return 0;s=s.trim();if(/\d{2}:\d{2}(:\d{2})?$/.test(s))s+=" +0530";const d=new Date(s);return isNaN(d)?0:d.getTime();}
 function rssItems(xmlText){
@@ -830,11 +830,23 @@ async function newsOfficial(f){
 async function newsGoogle(q){
   const url="https://news.google.com/rss/search?q="+encodeURIComponent(q)+"&hl=en-IN&gl=IN&ceid=IN:en";
   return rssItems(await nfetch(url)).map(i=>{let t=i.t;if(i.srcName&&t.endsWith(" - "+i.srcName))t=t.slice(0,-(i.srcName.length+3));return {t:t.trim(),u:i.u,src:i.srcName||"News",d:i.d};})
-    .filter(i=>i.d&&NEWS_TRUSTED.test(i.src)&&NEWS_FIN.test(i.t)&&!NEWS_JUNK.test(i.t)).map(i=>({...i,cat:newsCatOf(i.t)}));
+    .filter(i=>i.d&&NEWS_TRUSTED.test(i.src)&&NEWS_FIN.test(i.t)&&!NEWS_JUNK.test(i.t)&&!NEWS_MOVE.test(i.t)).map(i=>({...i,cat:newsCatOf(i.t)}));
+}
+const NEWS_MOVE=/\b(jumps|surges|slumps|tumbles|rallies|soars|plunges|falls|rises|gains|drops|climbs|slips|sinks) (nearly |over |about |up to )?\d+(\.\d+)? ?%/i;
+const NEWS_STOP=new Set("the and for with from that this into over after amid says said will its has have are was were new india indian bank banks rbi reserve sees may can could how why what when who more than about after under across".split(" "));
+function newsWords(t){return new Set((String(t).toLowerCase().match(/[a-z0-9]+/g)||[]).filter(w=>w.length>=3&&!NEWS_STOP.has(w)));}
+function newsDedupe(list){
+  const sorted=list.slice().sort((a,b)=>(a.off?0:1)-(b.off?0:1)||((a.fs||a.d||0)-(b.fs||b.d||0)));
+  const out=[],seen=[];
+  for(const i of sorted){const w=newsWords(i.t),d=i.d||i.fs||0;let dup=false;
+    for(const [w2,d2] of seen){if(!w.size||!w2.size||Math.abs(d-d2)>=3*864e5)continue;let c=0;w.forEach(x=>{if(w2.has(x))c++;});if(c/Math.min(w.size,w2.size)>=0.6){dup=true;break;}}
+    if(!dup){out.push(i);seen.push([w,d]);}}
+  return out;
 }
 function newsKeep(i){
+  if(String(i.src||"").trim().toLowerCase()==="the business standard")return false;
   if(i.off)return !(String(i.src).startsWith("RBI")&&RBI_ROUTINE.test(i.t));
-  return NEWS_TRUSTED.test(i.src||"")&&NEWS_FIN.test(i.t)&&!NEWS_JUNK.test(i.t);
+  return NEWS_TRUSTED.test(i.src||"")&&NEWS_FIN.test(i.t)&&!NEWS_JUNK.test(i.t)&&!NEWS_MOVE.test(i.t);
 }
 function newsMerge(old,add,now){
   const map=new Map();
@@ -843,7 +855,7 @@ function newsMerge(old,add,now){
     if(!o)map.set(k,{...i,d:i.d||now,fs:now});
     else if(i.off&&!o.off)map.set(k,{...i,d:i.d||o.d,fs:o.fs||now});});
   const cut=now-45*864e5;
-  return [...map.values()].map(i=>i.off?i:{...i,cat:newsCatOf(i.t)}).filter(i=>newsKeep(i)&&(i.d||i.fs)>=cut).sort((a,b)=>(b.d||b.fs)-(a.d||a.fs)).slice(0,600);
+  return newsDedupe([...map.values()].map(i=>i.off?i:{...i,cat:newsCatOf(i.t)}).filter(i=>newsKeep(i)&&(i.d||i.fs)>=cut)).sort((a,b)=>(b.d||b.fs)-(a.d||a.fs)).slice(0,600);
 }
 function newsLoadCache(){try{NEWS=JSON.parse(localStorage.getItem(NEWS_KEY)||"null");}catch(e){}if(!NEWS)NEWS={at:0,items:[]};NEWS.items=newsMerge(NEWS.items,[],Date.now());}
 function newsSaveCache(){try{localStorage.setItem(NEWS_KEY,JSON.stringify(NEWS));}catch(e){}}
@@ -873,17 +885,17 @@ function newsDayLabel(ms){const d=new Date(ms),t=new Date();const ds=d.toDateStr
   const s=d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});return ds===t.toDateString()?"Today · "+s:ds===y?"Yesterday · "+s:d.toLocaleDateString("en-IN",{weekday:"short"})+" · "+s;}
 function newsItemHtml(i,saved){
   const k=newsKey(i.t),isNew=NEWS_SEEN_AT&&(i.fs||0)>NEWS_SEEN_AT,tm=i.d?new Date(i.d).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit"}):"";
-  return `<div class="nitem"><div class="tags">${isNew?'<span class="tag" style="background:#fff1e5;color:#c25e17">New</span>':""}<span class="tag">${esc(i.cat||"Other")}</span>${i.off?'<span class="tag" style="background:#e8f6ef;color:#1a8f5a">Official</span>':""}</div>
+  return `<div class="nitem"><div class="tags">${isNew?'<span class="tag" style="background:#fff1e5;color:#c25e17">New</span>':""}<span class="tag">${esc(i.cat||"Economy & others")}</span>${i.off?'<span class="tag" style="background:#e8f6ef;color:#1a8f5a">Official</span>':""}</div>
    <a href="${esc(i.u)}" target="_blank" rel="noopener">${esc(i.t)}</a>
    <div class="nmeta"><span>${esc(i.src||"")}${tm?" · "+tm:""}</span><button type="button" class="nsave${saved.has(k)?" on":""}" data-nk="${esc(k)}" aria-label="Save for revision">${saved.has(k)?"★ Saved":"☆ Save"}</button></div></div>`;
 }
 function renderNews(){
   const box=$("v-news");if(!box)return;if(!NEWS)newsLoadCache();
   const savedList=newsSaved(),saved=new Set(savedList.map(x=>newsKey(x.t)));
-  let list=newsCat==="Saved"?savedList:NEWS.items.filter(i=>newsCat==="All"||(i.cat||"Other")===newsCat);
+  let list=newsCat==="Saved"?savedList:NEWS.items.filter(i=>newsCat==="All"||(i.cat||"Economy & others")===newsCat);
   if(newsQ){const q=newsQ.toLowerCase();list=list.filter(i=>(i.t+" "+(i.src||"")).toLowerCase().includes(q));}
   const show=newsMore?list:list.slice(0,120);
-  const counts={};NEWS.items.forEach(i=>{const c=i.cat||"Other";counts[c]=(counts[c]||0)+1;});
+  const counts={};NEWS.items.forEach(i=>{const c=i.cat||"Economy & others";counts[c]=(counts[c]||0)+1;});
   let html=`<div class="card"><h2>Banking Updates</h2><p class="stat">Daily banking & finance news for exams – RBI press releases and circulars, PIB releases, and news on bank appointments, penalties, mergers, MoUs and digital payments. Updates itself when you open the app and when you pull down.</p>
    <div style="display:flex;align-items:center;gap:8px;margin-top:8px"><span class="stat" style="flex:1;font-size:12.5px">${NEWS_BUSY?"Checking for new updates…":NEWS.at?"Checked "+ago(NEWS.at)+" · "+NEWS.items.length+" updates from the last 45 days":"Not checked yet"}</span><button class="chip" type="button" id="nref" ${NEWS_BUSY?"disabled":""}>${NEWS_BUSY?"…":"↻ Refresh"}</button></div>
    <input id="nq" type="search" placeholder="Search updates (e.g. penalty, UPI, SBI)" value="${esc(newsQ)}" style="width:100%;margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">
@@ -908,7 +920,7 @@ function openNews(){const b=$("nav").querySelector('[data-v="news"]');if(b)b.cli
 function newsViewed(){setTimeout(()=>{NEWS_SEEN_AT=Date.now();try{localStorage.setItem(NEWS_LAST,String(NEWS_SEEN_AT));}catch(e){}newsBadge();},1500);}
 function latestNewsCard(){
   if(!NEWS)newsLoadCache();
-  const top=NEWS.items.filter(i=>i.cat!=="Other").slice(0,6);
+  const top=NEWS.items.filter(i=>i.cat!=="Economy & others").slice(0,6);
   return `<div class="card"><div class="tags"><span class="tag">Auto-updated daily</span></div><h2>Banking industry – latest developments</h2>
    <p class="stat" style="margin-bottom:6px">${NEWS.at?"Checked "+ago(NEWS.at)+".":"Not checked yet."} New RBI circulars, bank appointments, penalties, mergers and schemes – likely current-affairs questions.</p>
    ${top.length?top.map(i=>`<div class="nitem"><div class="tags"><span class="tag">${esc(i.cat)}</span></div><a href="${esc(i.u)}" target="_blank" rel="noopener">${esc(i.t)}</a><div class="nmeta"><span>${esc(i.src||"")} · ${esc(new Date(i.d||i.fs).toLocaleDateString("en-IN",{day:"numeric",month:"short"}))}</span></div></div>`).join(""):'<p class="stat">Pull down to fetch the latest updates.</p>'}
