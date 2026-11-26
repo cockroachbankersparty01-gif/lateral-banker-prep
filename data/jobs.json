@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T03:14:34Z",
+ "updated": "2026-11-26T11:17:34Z",
  "jobs": [
   {
    "id": "bob-3078340",
@@ -249,6 +249,19 @@
    "link": "https://opportunities.rbi.org.in",
    "stage": "Final result (General cadre) declared, as reported",
    "stageType": "final"
+  },
+  {
+   "id": "sbi-3083829",
+   "addedAt": "2026-11-26T11:17:27Z",
+   "bank": "State Bank of India",
+   "post": "Assistant Manager - Engineer (Fire)",
+   "scale": "Officer",
+   "notified": "2026-11-26",
+   "lastDate": "2026-12-02",
+   "link": "https://sbi.bank.in/documents/77530/57941334/HN+FIRE+SBI+-+CRPD-SCO-2026-27_29+-+Hindi.pdf/a2c40cd3-10f7-bd2b-c63b-60dfa80be788?t=1795419039741",
+   "src": "https://www.freejobalert.com/articles/sbi-assistant-manager-engineer-fire-recruitment-2026-3083829",
+   "note": "Official notification linked above. Apply / details: https://ibpsreg.ibps.in/sbiameoct26/",
+   "vacancies": "17"
   },
   {
    "id": "sbi-cbo-2025-26-18",
